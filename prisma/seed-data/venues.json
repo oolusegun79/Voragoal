@@ -1,0 +1,18 @@
+[
+  { "id": "v_metlife",      "name": "MetLife Stadium",         "city": "East Rutherford", "country": "USA", "capacity": 82500 },
+  { "id": "v_sofi",         "name": "SoFi Stadium",            "city": "Inglewood",       "country": "USA", "capacity": 70240 },
+  { "id": "v_att",          "name": "AT&T Stadium",            "city": "Arlington",       "country": "USA", "capacity": 80000 },
+  { "id": "v_arrowhead",    "name": "Arrowhead Stadium",       "city": "Kansas City",     "country": "USA", "capacity": 76416 },
+  { "id": "v_mercedes",     "name": "Mercedes-Benz Stadium",   "city": "Atlanta",         "country": "USA", "capacity": 71000 },
+  { "id": "v_hardrock",     "name": "Hard Rock Stadium",       "city": "Miami Gardens",   "country": "USA", "capacity": 65326 },
+  { "id": "v_lincoln",      "name": "Lincoln Financial Field", "city": "Philadelphia",    "country": "USA", "capacity": 69596 },
+  { "id": "v_nrg",          "name": "NRG Stadium",             "city": "Houston",         "country": "USA", "capacity": 72220 },
+  { "id": "v_levis",        "name": "Levi's Stadium",          "city": "Santa Clara",     "country": "USA", "capacity": 68500 },
+  { "id": "v_lumen",        "name": "Lumen Field",             "city": "Seattle",         "country": "USA", "capacity": 68740 },
+  { "id": "v_gillette",     "name": "Gillette Stadium",        "city": "Foxborough",      "country": "USA", "capacity": 65878 },
+  { "id": "v_azteca",       "name": "Estadio Azteca",          "city": "Mexico City",     "country": "MEX", "capacity": 87000 },
+  { "id": "v_akron",        "name": "Estadio Akron",           "city": "Guadalajara",     "country": "MEX", "capacity": 49850 },
+  { "id": "v_bbva",         "name": "Estadio BBVA",            "city": "Monterrey",       "country": "MEX", "capacity": 53500 },
+  { "id": "v_bmo",          "name": "BMO Field",               "city": "Toronto",         "country": "CAN", "capacity": 45000 },
+  { "id": "v_bcplace",      "name": "BC Place",                "city": "Vancouver",       "country": "CAN", "capacity": 54500 }
+]

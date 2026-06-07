@@ -1,0 +1,61 @@
+[
+  { "id": "MEX", "name": "Mexico",                "shortName": "MEX", "flagEmoji": "🇲🇽", "accentColor": "#006847", "groupCode": "A", "fifaRanking": 14 },
+  { "id": "RSA", "name": "South Africa",          "shortName": "RSA", "flagEmoji": "🇿🇦", "accentColor": "#007749", "groupCode": "A", "fifaRanking": 56 },
+  { "id": "KOR", "name": "South Korea",           "shortName": "KOR", "flagEmoji": "🇰🇷", "accentColor": "#CD2E3A", "groupCode": "A", "fifaRanking": 22 },
+  { "id": "CZE", "name": "Czech Republic",        "shortName": "CZE", "flagEmoji": "🇨🇿", "accentColor": "#11457E", "groupCode": "A", "fifaRanking": 40 },
+
+  { "id": "CAN", "name": "Canada",                "shortName": "CAN", "flagEmoji": "🇨🇦", "accentColor": "#D52B1E", "groupCode": "B", "fifaRanking": 31 },
+  { "id": "BIH", "name": "Bosnia and Herzegovina","shortName": "BIH", "flagEmoji": "🇧🇦", "accentColor": "#002F6C", "groupCode": "B", "fifaRanking": 73 },
+  { "id": "QAT", "name": "Qatar",                 "shortName": "QAT", "flagEmoji": "🇶🇦", "accentColor": "#8A1538", "groupCode": "B", "fifaRanking": 50 },
+  { "id": "SUI", "name": "Switzerland",           "shortName": "SUI", "flagEmoji": "🇨🇭", "accentColor": "#DA291C", "groupCode": "B", "fifaRanking": 19 },
+
+  { "id": "BRA", "name": "Brazil",                "shortName": "BRA", "flagEmoji": "🇧🇷", "accentColor": "#FEDF00", "groupCode": "C", "fifaRanking": 5  },
+  { "id": "MAR", "name": "Morocco",               "shortName": "MAR", "flagEmoji": "🇲🇦", "accentColor": "#C1272D", "groupCode": "C", "fifaRanking": 13 },
+  { "id": "HAI", "name": "Haiti",                 "shortName": "HAI", "flagEmoji": "🇭🇹", "accentColor": "#00209F", "groupCode": "C", "fifaRanking": 84 },
+  { "id": "SCO", "name": "Scotland",              "shortName": "SCO", "flagEmoji": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "accentColor": "#0065BD", "groupCode": "C", "fifaRanking": 39 },
+
+  { "id": "USA", "name": "United States",         "shortName": "USA", "flagEmoji": "🇺🇸", "accentColor": "#B22234", "groupCode": "D", "fifaRanking": 16 },
+  { "id": "PAR", "name": "Paraguay",              "shortName": "PAR", "flagEmoji": "🇵🇾", "accentColor": "#D52B1E", "groupCode": "D", "fifaRanking": 48 },
+  { "id": "AUS", "name": "Australia",             "shortName": "AUS", "flagEmoji": "🇦🇺", "accentColor": "#FFCD00", "groupCode": "D", "fifaRanking": 27 },
+  { "id": "TUR", "name": "Türkiye",               "shortName": "TUR", "flagEmoji": "🇹🇷", "accentColor": "#E30A17", "groupCode": "D", "fifaRanking": 26 },
+
+  { "id": "GER", "name": "Germany",               "shortName": "GER", "flagEmoji": "🇩🇪", "accentColor": "#000000", "groupCode": "E", "fifaRanking": 9  },
+  { "id": "CUW", "name": "Curaçao",               "shortName": "CUW", "flagEmoji": "🇨🇼", "accentColor": "#002B7F", "groupCode": "E", "fifaRanking": 82 },
+  { "id": "CIV", "name": "Ivory Coast",           "shortName": "CIV", "flagEmoji": "🇨🇮", "accentColor": "#FF8200", "groupCode": "E", "fifaRanking": 42 },
+  { "id": "ECU", "name": "Ecuador",               "shortName": "ECU", "flagEmoji": "🇪🇨", "accentColor": "#FFD100", "groupCode": "E", "fifaRanking": 24 },
+
+  { "id": "NED", "name": "Netherlands",           "shortName": "NED", "flagEmoji": "🇳🇱", "accentColor": "#FF6C00", "groupCode": "F", "fifaRanking": 7  },
+  { "id": "JPN", "name": "Japan",                 "shortName": "JPN", "flagEmoji": "🇯🇵", "accentColor": "#BC002D", "groupCode": "F", "fifaRanking": 17 },
+  { "id": "SWE", "name": "Sweden",                "shortName": "SWE", "flagEmoji": "🇸🇪", "accentColor": "#006AA7", "groupCode": "F", "fifaRanking": 38 },
+  { "id": "TUN", "name": "Tunisia",               "shortName": "TUN", "flagEmoji": "🇹🇳", "accentColor": "#E70013", "groupCode": "F", "fifaRanking": 44 },
+
+  { "id": "BEL", "name": "Belgium",               "shortName": "BEL", "flagEmoji": "🇧🇪", "accentColor": "#ED2939", "groupCode": "G", "fifaRanking": 3  },
+  { "id": "EGY", "name": "Egypt",                 "shortName": "EGY", "flagEmoji": "🇪🇬", "accentColor": "#C8102E", "groupCode": "G", "fifaRanking": 36 },
+  { "id": "IRN", "name": "Iran",                  "shortName": "IRN", "flagEmoji": "🇮🇷", "accentColor": "#239F40", "groupCode": "G", "fifaRanking": 20 },
+  { "id": "NZL", "name": "New Zealand",           "shortName": "NZL", "flagEmoji": "🇳🇿", "accentColor": "#000000", "groupCode": "G", "fifaRanking": 95 },
+
+  { "id": "ESP", "name": "Spain",                 "shortName": "ESP", "flagEmoji": "🇪🇸", "accentColor": "#C60B1E", "groupCode": "H", "fifaRanking": 8  },
+  { "id": "CPV", "name": "Cape Verde",            "shortName": "CPV", "flagEmoji": "🇨🇻", "accentColor": "#003893", "groupCode": "H", "fifaRanking": 70 },
+  { "id": "KSA", "name": "Saudi Arabia",          "shortName": "KSA", "flagEmoji": "🇸🇦", "accentColor": "#006C35", "groupCode": "H", "fifaRanking": 60 },
+  { "id": "URY", "name": "Uruguay",               "shortName": "URU", "flagEmoji": "🇺🇾", "accentColor": "#5CBFEB", "groupCode": "H", "fifaRanking": 11 },
+
+  { "id": "FRA", "name": "France",                "shortName": "FRA", "flagEmoji": "🇫🇷", "accentColor": "#0055A4", "groupCode": "I", "fifaRanking": 2  },
+  { "id": "SEN", "name": "Senegal",               "shortName": "SEN", "flagEmoji": "🇸🇳", "accentColor": "#00853F", "groupCode": "I", "fifaRanking": 19 },
+  { "id": "IRQ", "name": "Iraq",                  "shortName": "IRQ", "flagEmoji": "🇮🇶", "accentColor": "#007A3D", "groupCode": "I", "fifaRanking": 58 },
+  { "id": "NOR", "name": "Norway",                "shortName": "NOR", "flagEmoji": "🇳🇴", "accentColor": "#BA0C2F", "groupCode": "I", "fifaRanking": 33 },
+
+  { "id": "ARG", "name": "Argentina",             "shortName": "ARG", "flagEmoji": "🇦🇷", "accentColor": "#75AADB", "groupCode": "J", "fifaRanking": 1  },
+  { "id": "ALG", "name": "Algeria",               "shortName": "ALG", "flagEmoji": "🇩🇿", "accentColor": "#006233", "groupCode": "J", "fifaRanking": 41 },
+  { "id": "AUT", "name": "Austria",               "shortName": "AUT", "flagEmoji": "🇦🇹", "accentColor": "#ED2939", "groupCode": "J", "fifaRanking": 23 },
+  { "id": "JOR", "name": "Jordan",                "shortName": "JOR", "flagEmoji": "🇯🇴", "accentColor": "#007A3D", "groupCode": "J", "fifaRanking": 65 },
+
+  { "id": "POR", "name": "Portugal",              "shortName": "POR", "flagEmoji": "🇵🇹", "accentColor": "#006600", "groupCode": "K", "fifaRanking": 6  },
+  { "id": "COD", "name": "DR Congo",              "shortName": "COD", "flagEmoji": "🇨🇩", "accentColor": "#007FFF", "groupCode": "K", "fifaRanking": 58 },
+  { "id": "UZB", "name": "Uzbekistan",            "shortName": "UZB", "flagEmoji": "🇺🇿", "accentColor": "#1EB53A", "groupCode": "K", "fifaRanking": 53 },
+  { "id": "COL", "name": "Colombia",              "shortName": "COL", "flagEmoji": "🇨🇴", "accentColor": "#FCD116", "groupCode": "K", "fifaRanking": 15 },
+
+  { "id": "ENG", "name": "England",               "shortName": "ENG", "flagEmoji": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "accentColor": "#DA291C", "groupCode": "L", "fifaRanking": 4  },
+  { "id": "HRV", "name": "Croatia",               "shortName": "CRO", "flagEmoji": "🇭🇷", "accentColor": "#171796", "groupCode": "L", "fifaRanking": 12 },
+  { "id": "GHA", "name": "Ghana",                 "shortName": "GHA", "flagEmoji": "🇬🇭", "accentColor": "#006B3F", "groupCode": "L", "fifaRanking": 64 },
+  { "id": "PAN", "name": "Panama",                "shortName": "PAN", "flagEmoji": "🇵🇦", "accentColor": "#D21034", "groupCode": "L", "fifaRanking": 45 }
+]

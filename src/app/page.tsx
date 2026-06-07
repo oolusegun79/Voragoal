@@ -1,65 +1,94 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, BarChart3, CalendarDays, Sparkles, Trophy } from "lucide-react";
+import { MarketingHeader } from "@/components/layout/MarketingHeader";
+import { Footer } from "@/components/layout/Footer";
+
+const features = [
+  {
+    icon: CalendarDays,
+    title: "Live schedule",
+    body: "Every fixture, kickoff time, and venue across all 12 host cities.",
+  },
+  {
+    icon: Sparkles,
+    title: "AI insights",
+    body: "Plain-English summaries of every match, team, and player — built on the data, never invented.",
+    accent: true,
+  },
+  {
+    icon: BarChart3,
+    title: "Deep analytics",
+    body: "Possession, shots, xG, top scorers — drill from tournament down to a single goal.",
+  },
+  {
+    icon: Trophy,
+    title: "Standings & bracket",
+    body: "Live group tables and the full knockout bracket from R32 to the final.",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      <MarketingHeader />
+
+      <main className="flex flex-1 flex-col">
+        {/* Hero */}
+        <section className="bg-hero-glow">
+          <div className="mx-auto flex max-w-5xl flex-col items-center px-6 py-24 text-center sm:py-32">
+            <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/60 px-3 py-1 text-xs text-muted-foreground">
+              <span className="size-1.5 rounded-full bg-accent" />
+              2026 FIFA World Cup · Canada · Mexico · USA
+            </span>
+            <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
+              Every goal. Every stat.{" "}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Every story.
+              </span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-pretty text-lg text-muted-foreground">
+              The 2026 World Cup — explained. Browse the schedule, drill into every team and player,
+              and read AI-generated summaries grounded in the actual data.
+            </p>
+            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
+              <Link
+                href="/signup"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+              >
+                Get started — free
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/matches"
+                className="inline-flex h-11 items-center justify-center rounded-md border border-border/80 bg-card/40 px-6 text-sm text-foreground transition hover:bg-card"
+              >
+                Browse the schedule
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Feature cards */}
+        <section className="mx-auto w-full max-w-7xl px-6 pb-24">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map(({ icon: Icon, title, body, accent }) => (
+              <div
+                key={title}
+                className="rounded-xl border border-border/60 bg-card p-6 transition hover:border-border"
+              >
+                <Icon
+                  className={`size-6 ${accent ? "text-accent" : "text-primary"}`}
+                  aria-hidden
+                />
+                <h3 className="mt-4 font-medium tracking-tight">{title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
-    </div>
+
+      <Footer />
+    </>
   );
 }
