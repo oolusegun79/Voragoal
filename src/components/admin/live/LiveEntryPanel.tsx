@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { CornerDownLeft, Trash2, Undo2 } from "lucide-react";
 import type { EventType, Player, Team, Match } from "@prisma/client";
 import { LiveMatchClock, getAddedMinute, getCurrentMinute } from "@/components/admin/live/LiveMatchClock";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { cn } from "@/lib/utils";
 
 type EventRow = {
@@ -191,11 +192,11 @@ export function LiveEntryPanel({
       <section className="rounded-xl border border-border/60 bg-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <span className="text-2xl">{home.team.flagEmoji}</span>
+            <span className="text-2xl"><FlagIcon emoji={home.team.flagEmoji} /></span>
             <p className="font-mono text-4xl font-bold tabular-nums">
               {homeScore} <span className="text-muted-foreground">–</span> {awayScore}
             </p>
-            <span className="text-2xl">{away.team.flagEmoji}</span>
+            <span className="text-2xl"><FlagIcon emoji={away.team.flagEmoji} /></span>
           </div>
           <LiveMatchClock state={clockState} />
         </div>
@@ -265,7 +266,7 @@ export function LiveEntryPanel({
                   {e.minute}{e.addedMinute ? `+${e.addedMinute}` : ""}'
                 </span>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span aria-hidden>{e.team.flagEmoji}</span>
+                  <span aria-hidden><FlagIcon emoji={e.team.flagEmoji} /></span>
                   <span className="text-muted-foreground">{EVENT_LABEL[e.type]}</span>
                   {e.player ? (
                     <span className="font-medium">{e.player.knownAs ?? e.player.fullName}</span>
@@ -339,7 +340,7 @@ function SideColumn({
   return (
     <div className="rounded-xl border border-border/60 bg-card p-3">
       <div className="mb-2 flex items-center gap-2 px-1 text-sm font-medium">
-        <span className="text-xl">{flag}</span>
+        <span className="text-xl"><FlagIcon emoji={flag} /></span>
         <span className="truncate">{label}</span>
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -488,7 +489,7 @@ function PickerDialog({
     >
       <div className="border-b border-border/60 p-4">
         <h3 className="font-semibold tracking-tight">
-          {title} · {squad.team.flagEmoji} {squad.team.shortName}
+          {title} · <FlagIcon emoji={squad.team.flagEmoji} /> {squad.team.shortName}
         </h3>
         <p className="mt-0.5 text-xs text-muted-foreground">Minute auto-fills from the clock.</p>
       </div>

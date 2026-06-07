@@ -50,6 +50,11 @@ export function FavoriteToggle({
         const res = await fetch(ENDPOINT[kind](id), {
           method: next ? "POST" : "DELETE",
         });
+        if (res.status === 402) {
+          setFavored(!next);
+          router.push("/pricing?from=favorite");
+          return;
+        }
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         router.refresh();
       } catch {

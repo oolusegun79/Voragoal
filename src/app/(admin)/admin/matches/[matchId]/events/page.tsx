@@ -4,6 +4,7 @@ import { ArrowLeft, Trash2, Radio } from "lucide-react";
 import { prisma } from "@/server/db";
 import { getMatchById } from "@/server/services/matchService";
 import { TeamCrest } from "@/components/team/TeamCrest";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { EventForm } from "@/components/admin/EventForm";
 import { formatKickoff } from "@/lib/formatters";
 import { deleteEventAction, recomputeScoreAction, setStatusAction } from "./actions";
@@ -57,7 +58,7 @@ export default async function AdminMatchEventsPage({
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
-              <span className="text-3xl" aria-hidden>{match.homeTeam.flagEmoji}</span>
+              <span className="text-3xl" aria-hidden><FlagIcon emoji={match.homeTeam.flagEmoji} /></span>
               <span className="text-xl font-semibold">{match.homeTeam.shortName}</span>
             </div>
             <p className="font-mono text-3xl tabular-nums">
@@ -65,7 +66,7 @@ export default async function AdminMatchEventsPage({
             </p>
             <div className="flex items-center gap-3">
               <span className="text-xl font-semibold">{match.awayTeam.shortName}</span>
-              <span className="text-3xl" aria-hidden>{match.awayTeam.flagEmoji}</span>
+              <span className="text-3xl" aria-hidden><FlagIcon emoji={match.awayTeam.flagEmoji} /></span>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Goal, LayoutDashboard, CalendarDays, Flag, Trophy, GitBranch, User as UserIcon, Wrench } from "lucide-react";
+import { Goal, LayoutDashboard, CalendarDays, Flag, Trophy, GitBranch, User as UserIcon, Wrench, Sparkles } from "lucide-react";
 import { auth } from "@/server/auth/config";
+import { userHasPass } from "@/server/auth/access";
 import { Footer } from "@/components/layout/Footer";
+import { UpgradeBanner } from "@/components/paywall/UpgradeBanner";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -17,6 +19,16 @@ const ADMIN_LINK = { href: "/admin", label: "Admin", icon: Wrench };
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const canAdmin = session?.user?.role === "EDITOR" || session?.user?.role === "ADMIN";
+
+  let showUpgrade = false;
+  if (session?.user?.id) {
+    try {
+      showUpgrade = !(await userHasPass(session.user.id));
+    } catch (err) {
+      console.error("[AppShell] userHasPass failed:", err);
+      showUpgrade = false;
+    }
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -47,6 +59,23 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ) : null}
         </nav>
+        {showUpgrade ? (
+          <Link
+            href="/pricing"
+            className="mx-4 mb-4 block rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 p-3 transition hover:from-primary/15 hover:to-accent/15"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4 text-primary" aria-hidden />
+              <span className="text-sm font-semibold text-primary">Tournament Pass</span>
+              <span className="ml-auto rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary">
+                $4.99
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
+              Unlock AI summaries, favourites & saved matches for the whole World Cup.
+            </p>
+          </Link>
+        ) : null}
         <div className="border-t border-border/60 p-4 text-xs text-muted-foreground">
           {session?.user ? (
             <div>
@@ -74,6 +103,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             <Link href="/login" className="text-sm text-primary">Log in</Link>
           )}
         </header>
+        <UpgradeBanner />
         <main className="flex-1">{children}</main>
         <Footer />
       </div>

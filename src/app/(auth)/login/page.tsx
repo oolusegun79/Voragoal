@@ -9,6 +9,7 @@ import {
   SubmitButton,
   TextInput,
 } from "@/components/auth/AuthCard";
+import { GoogleSignInButton, OrDivider } from "@/components/auth/GoogleSignInButton";
 import { loginAction, type LoginState } from "./actions";
 
 const initial: LoginState = {};
@@ -18,7 +19,11 @@ export default function LoginPage() {
 
   return (
     <AuthCard title="Welcome back" subtitle="Log in to your RealGoal account.">
-      <form action={formAction} className="space-y-5">
+      <div className="space-y-4">
+        <GoogleSignInButton label="Continue with Google" />
+        <OrDivider />
+      </div>
+      <form action={formAction} className="mt-4 space-y-5">
         <FormError message={state.error} />
         <FormField label="Email" htmlFor="email">
           <TextInput

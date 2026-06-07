@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, Star } from "lucide-react";
 import type { favoriteTeamsWithNext } from "@/server/services/favoritesService";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { formatKickoff } from "@/lib/formatters";
 
 type Row = Awaited<ReturnType<typeof favoriteTeamsWithNext>>[number];
@@ -36,7 +37,7 @@ export function FavoritesRail({ rows }: { rows: Row[] }) {
             className="group flex w-64 shrink-0 items-start gap-3 rounded-lg border border-border/60 bg-card-muted/40 p-3 transition hover:border-border"
             style={{ borderLeftColor: team.accentColor, borderLeftWidth: 3 }}
           >
-            <span className="text-2xl" aria-hidden>{team.flagEmoji}</span>
+            <span className="text-2xl" aria-hidden><FlagIcon emoji={team.flagEmoji} /></span>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{team.name}</p>
               {nextMatch ? (

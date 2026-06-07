@@ -2,9 +2,11 @@ import { Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { SubjectType } from "@prisma/client";
 import { auth } from "@/server/auth/config";
+import { userHasPass } from "@/server/auth/access";
 import { getSummary } from "@/server/ai/aiSummaryService";
 import { isAiConfigured } from "@/server/ai/anthropic";
 import { RegenerateButton } from "@/components/ai/RegenerateButton";
+import { PaywallCard } from "@/components/paywall/PaywallCard";
 
 export async function AiSummaryCard({
   subjectType,
@@ -26,6 +28,15 @@ export async function AiSummaryCard({
           to view AI-generated insights.
         </p>
       </Card>
+    );
+  }
+
+  if (!(await userHasPass(session.user.id))) {
+    return (
+      <PaywallCard
+        title="AI insights are part of the Tournament Pass"
+        body="Get the $4.99 Tournament Pass to read AI summaries for every match, team, and player — refreshed at half-time and full-time."
+      />
     );
   }
 

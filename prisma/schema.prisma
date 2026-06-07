@@ -59,19 +59,45 @@ enum Position {
 }
 
 model User {
-  id              String           @id @default(cuid())
-  email           String           @unique
-  passwordHash    String
-  name            String?
-  avatarUrl       String?
-  role            Role             @default(USER)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  favoriteTeams   FavoriteTeam[]
-  favoritePlayers FavoritePlayer[]
-  savedMatches    SavedMatch[]
-  sessions        Session[]
-  accounts        Account[]
+  id                String           @id @default(cuid())
+  email             String           @unique
+  passwordHash      String?                                                  // null for OAuth-only accounts (e.g. Google)
+  name              String?
+  avatarUrl         String?
+  role              Role             @default(USER)
+  hasTournamentPass Boolean          @default(false)
+  passPurchasedAt   DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  favoriteTeams     FavoriteTeam[]
+  favoritePlayers   FavoritePlayer[]
+  savedMatches      SavedMatch[]
+  sessions          Session[]
+  accounts          Account[]
+  purchases         Purchase[]
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  FAILED
+}
+
+model Purchase {
+  id                    String         @id @default(cuid())
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product               String                                              // "tournament_pass"
+  amountCents           Int
+  currency              String                                              // "usd"
+  status                PurchaseStatus @default(PENDING)
+  stripeSessionId       String         @unique
+  stripePaymentIntentId String?
+  createdAt             DateTime       @default(now())
+  completedAt           DateTime?
+
+  @@index([userId])
 }
 
 // NextAuth Prisma adapter tables — kept for future OAuth providers.

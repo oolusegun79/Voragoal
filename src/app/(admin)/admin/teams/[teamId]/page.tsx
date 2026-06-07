@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { prisma } from "@/server/db";
 import { TeamForm } from "@/components/admin/TeamForm";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { deleteTeamAction } from "../actions";
 
 export default async function EditTeamPage({
@@ -27,7 +28,7 @@ export default async function EditTeamPage({
         <ArrowLeft className="size-4" /> All teams
       </Link>
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-        <span aria-hidden>{team.flagEmoji}</span> {team.name}
+        <span aria-hidden><FlagIcon emoji={team.flagEmoji} /></span> {team.name}
       </h1>
 
       <div className="mt-6 rounded-xl border border-border/60 bg-card p-6">

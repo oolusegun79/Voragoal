@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { computeStandings } from "@/server/services/standingsService";
+import { FlagIcon } from "@/components/team/FlagIcon";
 
 export default async function StandingsPage() {
   const groups = await computeStandings();
@@ -48,7 +49,7 @@ export default async function StandingsPage() {
                         className="inline-flex items-center gap-2 hover:text-primary"
                       >
                         <span className="w-4 text-xs text-muted-foreground">{i + 1}</span>
-                        <span aria-hidden>{r.flagEmoji}</span>
+                        <span aria-hidden><FlagIcon emoji={r.flagEmoji} /></span>
                         <span className="truncate">{r.teamName}</span>
                       </Link>
                     </td>

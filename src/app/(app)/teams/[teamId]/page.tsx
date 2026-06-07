@@ -5,6 +5,7 @@ import { auth } from "@/server/auth/config";
 import { getTeamById, getTeamFixtures } from "@/server/services/teamService";
 import { isTeamFavorited } from "@/server/services/favoritesService";
 import { TeamCrest } from "@/components/team/TeamCrest";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { FavoriteToggle } from "@/components/favorites/FavoriteToggle";
 import { AiSummaryCard } from "@/components/ai/AiSummaryCard";
 import { formatKickoff } from "@/lib/formatters";
@@ -52,7 +53,7 @@ export default async function TeamDetailPage({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-5">
-            <span className="text-6xl" aria-hidden>{team.flagEmoji}</span>
+            <span className="text-6xl" aria-hidden><FlagIcon emoji={team.flagEmoji} /></span>
             <div>
               <h1 className="text-3xl font-semibold tracking-tight">{team.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground">

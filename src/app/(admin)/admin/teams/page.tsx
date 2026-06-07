@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, Pencil } from "lucide-react";
 import { prisma } from "@/server/db";
+import { FlagIcon } from "@/components/team/FlagIcon";
 
 export default async function AdminTeamsPage() {
   const teams = await prisma.team.findMany({
@@ -41,7 +42,7 @@ export default async function AdminTeamsPage() {
               <tr key={t.id} className="border-t border-border/40">
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
-                    <span aria-hidden>{t.flagEmoji}</span>
+                    <span aria-hidden><FlagIcon emoji={t.flagEmoji} /></span>
                     <span className="font-medium">{t.name}</span>
                     <span className="text-xs text-muted-foreground">{t.id}</span>
                   </div>

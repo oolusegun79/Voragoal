@@ -9,6 +9,7 @@ import {
   SubmitButton,
   TextInput,
 } from "@/components/auth/AuthCard";
+import { GoogleSignInButton, OrDivider } from "@/components/auth/GoogleSignInButton";
 import { signupAction, type SignupState } from "./actions";
 
 const initial: SignupState = {};
@@ -21,7 +22,11 @@ export default function SignupPage() {
       title="Create your account"
       subtitle="Free forever. No credit card required."
     >
-      <form action={formAction} className="space-y-5">
+      <div className="space-y-4">
+        <GoogleSignInButton label="Sign up with Google" redirectTo="/pricing?welcome=1" />
+        <OrDivider />
+      </div>
+      <form action={formAction} className="mt-4 space-y-5">
         <FormError message={state.error} />
         <FormField label="Name" htmlFor="name">
           <TextInput

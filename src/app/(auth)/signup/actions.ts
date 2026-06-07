@@ -41,7 +41,7 @@ export async function signupAction(
     await signIn("credentials", {
       email,
       password: parsed.data.password,
-      redirectTo: "/dashboard",
+      redirectTo: "/pricing?welcome=1",
     });
     return {};
   } catch (err) {

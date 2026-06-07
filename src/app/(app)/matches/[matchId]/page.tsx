@@ -6,6 +6,7 @@ import { getMatchById } from "@/server/services/matchService";
 import { getTeamById } from "@/server/services/teamService";
 import { isMatchSaved } from "@/server/services/favoritesService";
 import { FavoriteToggle } from "@/components/favorites/FavoriteToggle";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { MatchTabs, type TabKey } from "@/components/match/MatchTabs";
 import { MatchTimeline } from "@/components/match/MatchTimeline";
 import { MatchStatsTable } from "@/components/match/MatchStatsTable";
@@ -106,7 +107,7 @@ export default async function MatchDetailPage({
         <div className="mt-6 grid grid-cols-3 items-center gap-4">
           <div className="text-right">
             <Link href={`/teams/${match.homeTeam.id}`} className="inline-flex items-center gap-3">
-              <span className="text-3xl" aria-hidden>{match.homeTeam.flagEmoji}</span>
+              <span className="text-3xl" aria-hidden><FlagIcon emoji={match.homeTeam.flagEmoji} /></span>
               <span className="text-xl font-semibold">{match.homeTeam.shortName}</span>
             </Link>
             <p className="mt-1 text-xs text-muted-foreground">{match.homeTeam.name}</p>
@@ -137,7 +138,7 @@ export default async function MatchDetailPage({
           <div className="text-left">
             <Link href={`/teams/${match.awayTeam.id}`} className="inline-flex items-center gap-3">
               <span className="text-xl font-semibold">{match.awayTeam.shortName}</span>
-              <span className="text-3xl" aria-hidden>{match.awayTeam.flagEmoji}</span>
+              <span className="text-3xl" aria-hidden><FlagIcon emoji={match.awayTeam.flagEmoji} /></span>
             </Link>
             <p className="mt-1 text-xs text-muted-foreground">{match.awayTeam.name}</p>
           </div>

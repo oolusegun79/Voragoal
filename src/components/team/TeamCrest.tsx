@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { FlagIcon } from "./FlagIcon";
 
 export function TeamCrest({
   flagEmoji,
@@ -20,7 +21,7 @@ export function TeamCrest({
   return (
     <span className={cn("inline-flex items-center", s.wrap)}>
       <span className={s.emoji} aria-hidden>
-        {flagEmoji}
+        <FlagIcon emoji={flagEmoji} />
       </span>
       <span
         className="font-medium tracking-tight"

@@ -6,6 +6,7 @@ import { getPlayerById, getPlayerStats } from "@/server/services/playerService";
 import { isPlayerFavorited } from "@/server/services/favoritesService";
 import { FavoriteToggle } from "@/components/favorites/FavoriteToggle";
 import { AiSummaryCard } from "@/components/ai/AiSummaryCard";
+import { FlagIcon } from "@/components/team/FlagIcon";
 
 const POSITION_LABELS = {
   GK: "Goalkeeper",
@@ -48,7 +49,7 @@ export default async function PlayerDetailPage({
                 {player.knownAs ?? player.fullName}
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                <span aria-hidden>{player.team.flagEmoji}</span> {player.team.name} · {POSITION_LABELS[player.position]}
+                <span aria-hidden><FlagIcon emoji={player.team.flagEmoji} /></span> {player.team.name} · {POSITION_LABELS[player.position]}
                 {player.club ? ` · ${player.club}` : ""}
               </p>
             </div>

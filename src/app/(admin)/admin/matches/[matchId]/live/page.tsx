@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 import { prisma } from "@/server/db";
 import { getMatchById } from "@/server/services/matchService";
 import { LiveEntryPanel } from "@/components/admin/live/LiveEntryPanel";
+import { FlagIcon } from "@/components/team/FlagIcon";
 
 export default async function LiveEntryPage({
   params,
@@ -44,9 +45,9 @@ export default async function LiveEntryPage({
 
       <header className="mt-4">
         <h1 className="text-lg font-semibold tracking-tight">
-          <span aria-hidden>{match.homeTeam.flagEmoji}</span> {match.homeTeam.shortName}{" "}
+          <span aria-hidden><FlagIcon emoji={match.homeTeam.flagEmoji} /></span> {match.homeTeam.shortName}{" "}
           <span className="text-muted-foreground">vs</span>{" "}
-          {match.awayTeam.shortName} <span aria-hidden>{match.awayTeam.flagEmoji}</span>
+          {match.awayTeam.shortName} <span aria-hidden><FlagIcon emoji={match.awayTeam.flagEmoji} /></span>
         </h1>
         <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <Pencil className="size-3" /> Live entry mode · big tap targets · auto-saves

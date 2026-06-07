@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { computeBracket, type BracketCell, type ResolvedSlot } from "@/server/services/bracketService";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { formatDateOnly, formatTimeOnly } from "@/lib/formatters";
 
 export const dynamic = "force-dynamic";
@@ -74,14 +75,17 @@ function Cell({ cell }: { cell: BracketCell }) {
         cell.matchId ? "border-border/60 hover:border-border" : "border-dashed border-border/40"
       }`}
     >
-      <div className="mb-1 flex items-center justify-between text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="mb-1 flex items-center justify-between gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
         <span>M{cell.matchNumber}</span>
-        <span>
+        <span className="whitespace-nowrap text-[8px] tracking-normal">
           {formatDateOnly(cell.kickoffAt)} · {formatTimeOnly(cell.kickoffAt)}
         </span>
       </div>
       <SlotRow slot={cell.home} score={cell.homeScore} penalties={cell.homePenalties} />
       <SlotRow slot={cell.away} score={cell.awayScore} penalties={cell.awayPenalties} />
+      {cell.venue ? (
+        <p className="mt-1 truncate text-[10px] text-muted-foreground">{cell.venue.city}</p>
+      ) : null}
       {live ? (
         <div className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium text-red-400">
           <span className="size-1.5 animate-pulse rounded-full bg-red-400" /> LIVE
@@ -128,7 +132,7 @@ function SlotRow({
       <div className="flex items-center justify-between gap-2 py-0.5">
         <div className="flex min-w-0 items-center gap-1.5">
           <span className="text-sm" aria-hidden>
-            {slot.team.flagEmoji}
+            <FlagIcon emoji={slot.team.flagEmoji} />
           </span>
           <span className="truncate text-xs font-medium">{slot.team.shortName}</span>
         </div>

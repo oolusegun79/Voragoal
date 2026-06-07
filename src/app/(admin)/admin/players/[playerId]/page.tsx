@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { prisma } from "@/server/db";
 import { PlayerForm } from "@/components/admin/PlayerForm";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { deletePlayerAction } from "../actions";
 
 export default async function EditPlayerPage({
@@ -33,7 +34,7 @@ export default async function EditPlayerPage({
         {player.knownAs ?? player.fullName}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        <span aria-hidden>{player.team.flagEmoji}</span> {player.team.name}
+        <span aria-hidden><FlagIcon emoji={player.team.flagEmoji} /></span> {player.team.name}
       </p>
 
       <div className="mt-6 rounded-xl border border-border/60 bg-card p-6">

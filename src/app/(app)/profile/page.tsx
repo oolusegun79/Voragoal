@@ -8,6 +8,7 @@ import {
 } from "@/server/services/favoritesService";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { TeamCrest } from "@/components/team/TeamCrest";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { formatKickoff } from "@/lib/formatters";
 
 const TABS = ["account", "favorites", "saved"] as const;
@@ -79,7 +80,7 @@ export default async function ProfilePage({
                       className="flex items-center gap-3 rounded-lg border border-border/60 bg-card p-3 hover:border-border"
                       style={{ borderLeftColor: t.accentColor, borderLeftWidth: 3 }}
                     >
-                      <span className="text-2xl" aria-hidden>{t.flagEmoji}</span>
+                      <span className="text-2xl" aria-hidden><FlagIcon emoji={t.flagEmoji} /></span>
                       <div className="min-w-0">
                         <p className="truncate font-medium">{t.shortName}</p>
                         <p className="truncate text-xs text-muted-foreground">{t.name}</p>
@@ -115,7 +116,7 @@ export default async function ProfilePage({
                         <span className="truncate font-medium">{p.knownAs ?? p.fullName}</span>
                       </p>
                       <p className="mt-1 truncate text-xs text-muted-foreground">
-                        <span aria-hidden>{p.team.flagEmoji}</span> {p.team.shortName}
+                        <span aria-hidden><FlagIcon emoji={p.team.flagEmoji} /></span> {p.team.shortName}
                       </p>
                     </Link>
                   ))}

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth/config";
+import { userHasPass } from "@/server/auth/access";
 import { prisma } from "@/server/db";
 
 function unauthorized() {
@@ -9,12 +10,20 @@ function unauthorized() {
   );
 }
 
+function paymentRequired() {
+  return NextResponse.json(
+    { error: { code: "payment_required", message: "Tournament Pass required to save matches." } },
+    { status: 402 }
+  );
+}
+
 export async function POST(
   _req: Request,
   ctx: { params: Promise<{ matchId: string }> }
 ) {
   const session = await auth();
   if (!session?.user?.id) return unauthorized();
+  if (!(await userHasPass(session.user.id))) return paymentRequired();
   const { matchId } = await ctx.params;
 
   const match = await prisma.match.findUnique({ where: { id: matchId }, select: { id: true } });

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listTeams } from "@/server/services/teamService";
+import { FlagIcon } from "@/components/team/FlagIcon";
 
 export default async function TeamsPage() {
   const teams = await listTeams();
@@ -36,7 +37,7 @@ export default async function TeamsPage() {
                     className="group flex items-center gap-3 rounded-lg border border-border/60 bg-card p-4 transition hover:border-border"
                     style={{ borderLeftColor: t.accentColor, borderLeftWidth: 3 }}
                   >
-                    <span className="text-3xl" aria-hidden>{t.flagEmoji}</span>
+                    <span className="text-3xl" aria-hidden><FlagIcon emoji={t.flagEmoji} /></span>
                     <div className="min-w-0">
                       <p className="truncate font-medium tracking-tight">{t.name}</p>
                       <p className="text-xs text-muted-foreground">

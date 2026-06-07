@@ -26,9 +26,9 @@
 
   { "matchNumber": 25, "stage": "GROUP", "groupCode": "A", "kickoffAt": "2026-06-18T16:00:00Z", "homeTeamId": "CZE", "awayTeamId": "RSA", "venueId": "v_mercedes", "status": "SCHEDULED" },
   { "matchNumber": 26, "stage": "GROUP", "groupCode": "A", "kickoffAt": "2026-06-19T01:00:00Z", "homeTeamId": "MEX", "awayTeamId": "KOR", "venueId": "v_akron",    "status": "SCHEDULED" },
-  { "matchNumber": 27, "stage": "GROUP", "groupCode": "B", "kickoffAt": "2026-06-19T19:00:00Z", "homeTeamId": "SUI", "awayTeamId": "BIH", "venueId": "v_sofi",     "status": "SCHEDULED" },
+  { "matchNumber": 27, "stage": "GROUP", "groupCode": "B", "kickoffAt": "2026-06-18T19:00:00Z", "homeTeamId": "SUI", "awayTeamId": "BIH", "venueId": "v_sofi",     "status": "SCHEDULED" },
   { "matchNumber": 28, "stage": "GROUP", "groupCode": "D", "kickoffAt": "2026-06-19T19:00:00Z", "homeTeamId": "USA", "awayTeamId": "AUS", "venueId": "v_lumen",    "status": "SCHEDULED" },
-  { "matchNumber": 29, "stage": "GROUP", "groupCode": "B", "kickoffAt": "2026-06-19T22:00:00Z", "homeTeamId": "CAN", "awayTeamId": "QAT", "venueId": "v_bcplace",  "status": "SCHEDULED" },
+  { "matchNumber": 29, "stage": "GROUP", "groupCode": "B", "kickoffAt": "2026-06-18T22:00:00Z", "homeTeamId": "CAN", "awayTeamId": "QAT", "venueId": "v_bcplace",  "status": "SCHEDULED" },
   { "matchNumber": 30, "stage": "GROUP", "groupCode": "C", "kickoffAt": "2026-06-19T22:00:00Z", "homeTeamId": "SCO", "awayTeamId": "MAR", "venueId": "v_gillette", "status": "SCHEDULED" },
   { "matchNumber": 31, "stage": "GROUP", "groupCode": "C", "kickoffAt": "2026-06-20T00:30:00Z", "homeTeamId": "BRA", "awayTeamId": "HAI", "venueId": "v_lincoln",  "status": "SCHEDULED" },
   { "matchNumber": 32, "stage": "GROUP", "groupCode": "D", "kickoffAt": "2026-06-20T03:00:00Z", "homeTeamId": "TUR", "awayTeamId": "PAR", "venueId": "v_levis",    "status": "SCHEDULED" },

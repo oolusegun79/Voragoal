@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, Pencil } from "lucide-react";
 import { prisma } from "@/server/db";
+import { FlagIcon } from "@/components/team/FlagIcon";
 
 export default async function AdminPlayersPage({
   searchParams,
@@ -96,7 +97,7 @@ export default async function AdminPlayersPage({
                     ) : null}
                   </td>
                   <td className="px-4 py-2">
-                    <span aria-hidden>{p.team.flagEmoji}</span> {p.team.shortName}
+                    <span aria-hidden><FlagIcon emoji={p.team.flagEmoji} /></span> {p.team.shortName}
                   </td>
                   <td className="px-4 py-2 text-center text-xs">{p.position}</td>
                   <td className="px-4 py-2 text-center font-mono text-xs">{p.shirtNumber ?? "—"}</td>
