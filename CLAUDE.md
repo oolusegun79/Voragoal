@@ -26,7 +26,11 @@ pnpm prisma migrate dev --name X  # create + apply a migration
 pnpm db:seed                      # idempotent upsert of prisma/seed-data/*.json
 pnpm db:studio                    # Prisma Studio (table browser)
 
+pnpm prisma generate              # regenerate Prisma client after schema changes
 pnpm tsx scripts/make-admin.ts user@example.com   # promote a USER → ADMIN
+
+# Local Stripe webhook forwarding (separate terminal during dev):
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 There are no unit/e2e tests yet — Playwright is intentionally deferred until CI is set up. `pnpm typecheck` and `pnpm build` are the green/red signal.
@@ -40,11 +44,19 @@ Three route groups under `src/app/`:
 - `(app)/` — public + authenticated app, wrapped in `AppShell` (sidebar nav with role-conditional Admin link)
 - `(admin)/admin/` — EDITOR+ only, wrapped in `AdminShell` (separate sidebar). The layout calls `requireRole("EDITOR")` so every nested route is gated at the layout level.
 
-Public marketing landing at `src/app/page.tsx` uses its own `MarketingHeader` instead of `AppShell`.
+Public marketing landing at `src/app/page.tsx` uses its own `MarketingHeader` instead of `AppShell` — but the page server-redirects logged-in users to `/dashboard`, so authenticated visitors never see the marketing surface. Legal pages (`/privacy`, `/terms`) sit at the app root (outside any group) and reuse `MarketingHeader` + `Footer`.
+
+`AppShell` renders the desktop sidebar inline, but the mobile (`<lg`) header is delegated to a client component `MobileNav` (slide-in drawer with the hamburger). Both consume `NAV` and `ADMIN_LINK` from `src/components/layout/nav-items.ts` — that file is the single source of truth for nav. Don't add nav items in two places.
 
 ### Auth + role gating
 
-NextAuth v5 (beta) with the **Credentials provider** and **JWT sessions** (Credentials forces JWT; the Prisma adapter is *not* wired and the `Account`/`Session` tables exist only for future OAuth). Sessions are augmented with `role` via `src/types/next-auth.d.ts` and the `jwt` + `session` callbacks in `src/server/auth/config.ts`.
+NextAuth v5 (beta) with **Credentials + Google providers** and **JWT sessions** (Credentials forces JWT; the Prisma adapter is *not* wired and the `Account`/`Session` tables exist only for future OAuth flows that may need them). Sessions are augmented with `role` via `src/types/next-auth.d.ts` and the `jwt` + `session` callbacks in `src/server/auth/config.ts`.
+
+Google specifics:
+- Conditional on `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` being set — provider list is built dynamically. If the env vars are missing (e.g. local dev), the Google button still renders but the OAuth flow won't complete; that's intentional.
+- `signIn` callback **upserts the `User`** for Google sign-ins (`User.passwordHash` is nullable for OAuth users). Credentials provider rejects users with a null `passwordHash`.
+- `allowDangerousEmailAccountLinking: true` is set so a user who signed up with credentials and later "Sign in with Google" using the same email gets linked rather than duplicated.
+- `src/server/auth/google-action.ts` exposes a server action `signInWithGoogle(formData)` consumed by `GoogleSignInButton`. Don't call `signIn("google")` from a client component directly — it has to go through a server action with NextAuth v5.
 
 Two guard styles:
 - **Pages / server actions** → `requireRole(min)` from `src/server/auth/guards.ts` (redirects to `/login` on 401, throws `Response(403)` on insufficient role).
@@ -69,6 +81,23 @@ Both routes share the same service-layer functions in `src/server/services/event
 - **Score auto-derives from `MatchEvent` rows** via `recomputeMatchScore`. Own-goals are credited to the *opposing* team. Never write `Match.homeScore` directly from event-entry code — go through the recompute.
 - **Public match page polls every 15s while `status === LIVE`** via `LiveScorePoller` (calls `router.refresh()` only — no fetch endpoint needed). Stops as soon as status flips to FINISHED.
 
+### Tournament Pass + paywall
+
+A **one-time $4.99 purchase** unlocks AI insights, favourites, and saved matches. Free users get schedule, teams, players, standings, bracket. Implementation pivots on three pieces:
+
+- **`User.hasTournamentPass`** boolean + **`Purchase`** model (`stripeSessionId @unique`, status enum) on the Prisma schema. The unique constraint is the basis of idempotent webhook fulfillment.
+- **`src/server/auth/access.ts`**: `userHasPass(userId)` is the single read-side check (EDITOR/ADMIN auto-pass). `requirePass(returnTo?)` is the redirect guard for pages that must be paid-only. **Always call `userHasPass`** rather than reading the boolean directly — the helper short-circuits for elevated roles, which is the intended behaviour.
+- **Server checkout**: `POST /api/checkout` creates a Stripe Checkout session and writes a `PENDING` `Purchase` row. **Webhook fulfillment** at `POST /api/webhooks/stripe` flips status to `PAID`, sets `User.hasTournamentPass = true`, and `User.passPurchasedAt`. The webhook handler uses `stripeSessionId` uniqueness for idempotency — Stripe retries are safe.
+
+UX gating patterns to reuse, not reinvent:
+- API routes returning **402 Payment Required** for client-driven actions free users hit (favourites toggle, saved matches). `src/components/favorites/FavoriteToggle.tsx` handles 402 by redirecting to `/pricing?from=favorite`. The DELETE side stays open so users can remove items if their pass lapses.
+- Server components show **`<PaywallCard>`** (`src/components/paywall/PaywallCard.tsx`) instead of the gated content (e.g. `AiSummaryCard`).
+- Persistent CTAs: the sidebar Tournament Pass card + the dismissible top banner (`DismissibleBanner`, sessionStorage-keyed). Both hide on `/pricing` and the checkout pages.
+
+**Never** raise the price or change the Stripe amount in code without also updating: the strikethrough copy on `/pricing`, the sidebar pill (`AppShell.tsx`), the dismissible banner, the paywall card body, and `src/server/stripe.ts::TOURNAMENT_PASS`. There's no central price constant by design — but `grep "4.99"` will find every place.
+
+Local Stripe testing uses the Stripe CLI (`stripe listen --forward-to localhost:3000/api/webhooks/stripe`); the CLI prints a `whsec_...` that goes in `STRIPE_WEBHOOK_SECRET` for dev. Production uses a separate webhook endpoint registered in the Stripe Dashboard with its own signing secret. Test card `4242 4242 4242 4242` works end-to-end.
+
 ### AI summaries
 
 `src/server/ai/aiSummaryService.ts::getSummary(subjectType, subjectId, { force? })` is the only entry point. It:
@@ -82,6 +111,33 @@ Both routes share the same service-layer functions in `src/server/services/event
 Live matches **do not** auto-generate per event — the service early-returns a "Live — refreshes at HT and FT" placeholder. `recordHalfTime` and `fullTime` in eventsService call `scheduleMatchSummary(matchId)` (fire-and-forget) which forces a fresh generation at those two checkpoints only.
 
 If `ANTHROPIC_API_KEY` is missing, the card degrades gracefully to "AI insights aren't configured" and persists a template summary — never a 500.
+
+## Build & deploy
+
+Production runs on Vercel at **voragoal.com** (apex; `www.` 308-redirects to apex). NEXTAUTH_URL is `https://voragoal.com`.
+
+Vercel-specific quirks worth knowing before you touch `package.json` or schema:
+
+- **`"build": "prisma generate && next build"`** — required because pnpm 10 blocks postinstall scripts by default. Without this, `@prisma/client` ships as the unbuilt stub on Vercel and the build fails with `Module '@prisma/client' has no exported member 'PrismaClient'`. The lazy Proxy in `src/server/db.ts` lets `next build` still collect static page data without `DATABASE_URL` being set during build.
+- **`pnpm.onlyBuiltDependencies`** in `package.json` whitelists the few native-binary packages (`@prisma/client`, `@prisma/engines`, `prisma`, `@node-rs/argon2`, `esbuild`, `sharp`, `unrs-resolver`) whose install scripts must run. Don't broaden this without thinking — pnpm's default block is a supply-chain-attack defence.
+- **Migrations don't run on deploy automatically.** Run `pnpm prisma migrate deploy` manually pointing at the prod `DATABASE_URL`, or use the Supabase SQL editor, before/after the relevant deploy.
+
+## Brand assets
+
+Next 16's **metadata-files convention** drives all branding — no manual `<link>` tags needed:
+
+- `src/app/icon.png` (favicon) and `src/app/apple-icon.png` (iOS home screen, 180×180) are auto-served and auto-tagged.
+- `src/app/opengraph-image.jpg` and `src/app/twitter-image.jpg` (1200×630) become `og:image` and `twitter:image` automatically — share cards on WhatsApp/Twitter/Slack/iMessage.
+- The default Next.js `favicon.ico` has been deleted on purpose — `icon.png` outranks it but only if `favicon.ico` is absent.
+- Source files live in `public/brand/` for re-export. Padding to a square (with `#0b1020` to match `--color-background`) is the convention so iOS rounded-corner cropping doesn't chop content.
+
+## Cookies, privacy, terms
+
+The site sets only **strictly necessary cookies** (NextAuth session + CSRF), so no GDPR-style consent banner is required — a notice suffices. `src/components/legal/CookieNotice.tsx` is a dismissible bottom-fixed bar, state stored in `localStorage` under `voragoal:cookie-notice-acknowledged`, mounted in the **root layout** so it covers every route.
+
+If you ever add analytics, advertising, or any third-party cookie-setting script, **upgrade to a real consent flow** (granular accept/reject, scripts loaded only after consent) — the current notice is not consent.
+
+`/privacy` and `/terms` are stub-content pages reviewed for the launch jurisdiction (US). They mention every third-party we use (Stripe, Google, Anthropic, Vercel, Supabase, Zoho) — keep that list in sync if you add or remove a vendor.
 
 ## Prisma 7 + Supabase gotchas
 
