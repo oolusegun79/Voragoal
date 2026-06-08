@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Goal, Sparkles } from "lucide-react";
+import { Goal, LogOut, Sparkles } from "lucide-react";
 import { auth } from "@/server/auth/config";
 import { userHasPass } from "@/server/auth/access";
 import { Footer } from "@/components/layout/Footer";
 import { UpgradeBanner } from "@/components/paywall/UpgradeBanner";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { NAV, ADMIN_LINK } from "@/components/layout/nav-items";
+import { signOutAction } from "@/server/auth/logout-action";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -75,9 +76,20 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         ) : null}
         <div className="border-t border-border/60 p-4 text-xs text-muted-foreground">
           {session?.user ? (
-            <div>
-              <p className="truncate text-foreground">{session.user.name ?? session.user.email}</p>
-              <p className="text-accent">{session.user.role}</p>
+            <div className="space-y-2">
+              <div>
+                <p className="truncate text-foreground">{session.user.name ?? session.user.email}</p>
+                <p className="text-accent">{session.user.role}</p>
+              </div>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-muted-foreground transition hover:bg-card hover:text-foreground"
+                >
+                  <LogOut className="size-3.5" aria-hidden />
+                  Log out
+                </button>
+              </form>
             </div>
           ) : (
             <Link href="/login" className="text-primary hover:underline">

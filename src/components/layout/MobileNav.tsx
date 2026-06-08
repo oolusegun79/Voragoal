@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Goal, Menu, X, Sparkles } from "lucide-react";
+import { Goal, Menu, X, Sparkles, LogOut } from "lucide-react";
 import { NAV, ADMIN_LINK } from "./nav-items";
+import { signOutAction } from "@/server/auth/logout-action";
 
 export function MobileNav({
   canAdmin,
@@ -152,9 +153,20 @@ export function MobileNav({
 
         <div className="border-t border-border/60 p-4 text-xs text-muted-foreground">
           {userLabel ? (
-            <div>
-              <p className="truncate text-foreground">{userLabel}</p>
-              {userRole ? <p className="text-accent">{userRole}</p> : null}
+            <div className="space-y-2">
+              <div>
+                <p className="truncate text-foreground">{userLabel}</p>
+                {userRole ? <p className="text-accent">{userRole}</p> : null}
+              </div>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-muted-foreground transition hover:bg-card hover:text-foreground"
+                >
+                  <LogOut className="size-3.5" aria-hidden />
+                  Log out
+                </button>
+              </form>
             </div>
           ) : (
             <Link href="/login" className="text-primary hover:underline">
