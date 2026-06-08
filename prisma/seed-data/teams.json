@@ -19,7 +19,7 @@
   { "id": "AUS", "name": "Australia",             "shortName": "AUS", "flagEmoji": "🇦🇺", "accentColor": "#FFCD00", "groupCode": "D", "fifaRanking": 27 },
   { "id": "TUR", "name": "Türkiye",               "shortName": "TUR", "flagEmoji": "🇹🇷", "accentColor": "#E30A17", "groupCode": "D", "fifaRanking": 26 },
 
-  { "id": "GER", "name": "Germany",               "shortName": "GER", "flagEmoji": "🇩🇪", "accentColor": "#000000", "groupCode": "E", "fifaRanking": 9  },
+  { "id": "GER", "name": "Germany",               "shortName": "GER", "flagEmoji": "🇩🇪", "accentColor": "#DD0000", "groupCode": "E", "fifaRanking": 9  },
   { "id": "CUW", "name": "Curaçao",               "shortName": "CUW", "flagEmoji": "🇨🇼", "accentColor": "#002B7F", "groupCode": "E", "fifaRanking": 82 },
   { "id": "CIV", "name": "Ivory Coast",           "shortName": "CIV", "flagEmoji": "🇨🇮", "accentColor": "#FF8200", "groupCode": "E", "fifaRanking": 42 },
   { "id": "ECU", "name": "Ecuador",               "shortName": "ECU", "flagEmoji": "🇪🇨", "accentColor": "#FFD100", "groupCode": "E", "fifaRanking": 24 },
@@ -32,7 +32,7 @@
   { "id": "BEL", "name": "Belgium",               "shortName": "BEL", "flagEmoji": "🇧🇪", "accentColor": "#ED2939", "groupCode": "G", "fifaRanking": 3  },
   { "id": "EGY", "name": "Egypt",                 "shortName": "EGY", "flagEmoji": "🇪🇬", "accentColor": "#C8102E", "groupCode": "G", "fifaRanking": 36 },
   { "id": "IRN", "name": "Iran",                  "shortName": "IRN", "flagEmoji": "🇮🇷", "accentColor": "#239F40", "groupCode": "G", "fifaRanking": 20 },
-  { "id": "NZL", "name": "New Zealand",           "shortName": "NZL", "flagEmoji": "🇳🇿", "accentColor": "#000000", "groupCode": "G", "fifaRanking": 95 },
+  { "id": "NZL", "name": "New Zealand",           "shortName": "NZL", "flagEmoji": "🇳🇿", "accentColor": "#FFFFFF", "groupCode": "G", "fifaRanking": 95 },
 
   { "id": "ESP", "name": "Spain",                 "shortName": "ESP", "flagEmoji": "🇪🇸", "accentColor": "#C60B1E", "groupCode": "H", "fifaRanking": 8  },
   { "id": "CPV", "name": "Cape Verde",            "shortName": "CPV", "flagEmoji": "🇨🇻", "accentColor": "#003893", "groupCode": "H", "fifaRanking": 70 },
