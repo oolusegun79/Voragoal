@@ -16,6 +16,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/teams",
     "/standings",
     "/bracket",
+    "/pricing",
+    "/privacy",
+    "/terms",
   ].map((p) => ({ url: `${base}${p}`, changeFrequency: "daily", priority: p === "/" ? 1 : 0.8 }));
 
   const teamUrls: MetadataRoute.Sitemap = teams.map((t) => ({
