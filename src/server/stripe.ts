@@ -20,7 +20,7 @@ export function isStripeConfigured(): boolean {
 
 export const TOURNAMENT_PASS = {
   product: "tournament_pass" as const,
-  name: "RealGoal Tournament Pass",
+  name: "Voragoal Tournament Pass",
   description:
     "Full access to AI match summaries, favourite teams & players, and saved matches for the 2026 FIFA World Cup.",
   amountCents: 499,

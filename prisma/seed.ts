@@ -132,7 +132,7 @@ async function seedMatches() {
 }
 
 async function main() {
-  console.log("Seeding RealGoal database…");
+  console.log("Seeding Voragoal database…");
   await seedVenues();
   await seedTeams();
   await seedPlayers();

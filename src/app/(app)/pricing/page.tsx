@@ -92,7 +92,7 @@ export default async function PricingPage({
 
       <section className="mt-10 rounded-xl border border-border/40 bg-card/40 p-6">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <Sparkles className="size-4 text-accent" /> What RealGoal is not
+          <Sparkles className="size-4 text-accent" /> What Voragoal is not
         </h2>
         <ul className="space-y-1.5 text-sm text-muted-foreground">
           {NOT_INCLUDED.map((item) => (
@@ -103,8 +103,8 @@ export default async function PricingPage({
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Questions? Email{" "}
-        <a className="underline" href="mailto:support@realgoal.app">
-          support@realgoal.app
+        <a className="underline" href="mailto:support@voragoal.com">
+          support@voragoal.com
         </a>
         .
       </p>

@@ -1,11 +1,11 @@
-# RealGoal
+# Voragoal
 
 An independent, AI-powered analytics web platform for the 2026 FIFA World Cup.
 Browse the schedule, drill into every team and player, watch matches go live
 with one-tap event entry, and read plain-English summaries grounded in the
 actual data.
 
-> RealGoal is **not** a betting product. There are no odds, prediction markets,
+> Voragoal is **not** a betting product. There are no odds, prediction markets,
 > or wagering features anywhere in the app. It is also **not** affiliated with,
 > endorsed by, or sponsored by FIFA.
 

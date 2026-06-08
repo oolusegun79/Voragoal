@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* RealGoal brand palette — dark-mode only by design. */
+/* Voragoal brand palette — dark-mode only by design. */
 :root {
   --color-background: #0b1020;
   --color-card: #131a2e;

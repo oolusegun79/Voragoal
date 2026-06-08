@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/server/db";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXTAUTH_URL?.replace(/\/$/, "") ?? "https://realgoal.app";
+  const base = process.env.NEXTAUTH_URL?.replace(/\/$/, "") ?? "https://voragoal.com";
 
   const [teams, players, matches] = await Promise.all([
     prisma.team.findMany({ select: { id: true } }),

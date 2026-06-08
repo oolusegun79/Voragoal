@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "RealGoal — 2026 World Cup Analytics",
-    template: "%s · RealGoal",
+    default: "Voragoal — 2026 World Cup Analytics",
+    template: "%s · Voragoal",
   },
   description:
     "An independent, AI-powered analytics platform for the 2026 FIFA World Cup. Schedule, teams, players, stats, and plain-English insights.",
-  applicationName: "RealGoal",
-  metadataBase: new URL("https://realgoal.app"),
+  applicationName: "Voragoal",
+  metadataBase: new URL("https://voragoal.com"),
   robots: { index: true, follow: true },
 };
 

@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(loginAction, initial);
 
   return (
-    <AuthCard title="Welcome back" subtitle="Log in to your RealGoal account.">
+    <AuthCard title="Welcome back" subtitle="Log in to your Voragoal account.">
       <div className="space-y-4">
         <GoogleSignInButton label="Continue with Google" />
         <OrDivider />

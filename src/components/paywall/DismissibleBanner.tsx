@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Sparkles, X } from "lucide-react";
 
-const DISMISS_KEY = "realgoal:upgrade-banner-dismissed";
+const DISMISS_KEY = "voragoal:upgrade-banner-dismissed";
 const HIDE_ON = ["/pricing", "/checkout/success", "/checkout/cancel"];
 
 export function DismissibleBanner() {

@@ -22,7 +22,7 @@ export function AdminShell({
       <aside className="hidden w-60 shrink-0 border-r border-border/60 bg-background lg:flex lg:flex-col">
         <div className="flex h-16 items-center gap-2 border-b border-border/60 px-6 font-semibold tracking-tight">
           <Goal className="size-5 text-primary" aria-hidden />
-          RealGoal
+          Voragoal
           <span className="ml-auto rounded bg-accent/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-accent">
             admin
           </span>
@@ -58,7 +58,7 @@ export function AdminShell({
         <header className="flex h-16 items-center justify-between border-b border-border/60 px-6 lg:hidden">
           <Link href="/admin" className="flex items-center gap-2 font-semibold tracking-tight">
             <Goal className="size-5 text-primary" aria-hidden />
-            RealGoal Admin
+            Voragoal Admin
           </Link>
           <Link href="/dashboard" className="text-sm text-muted-foreground">← App</Link>
         </header>

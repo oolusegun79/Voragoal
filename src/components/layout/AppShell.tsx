@@ -36,7 +36,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden w-60 shrink-0 border-r border-border/60 bg-background lg:flex lg:flex-col">
         <div className="flex h-16 items-center gap-2 border-b border-border/60 px-6 font-semibold tracking-tight">
           <Goal className="size-5 text-primary" aria-hidden />
-          RealGoal
+          Voragoal
         </div>
         <nav className="flex-1 space-y-1 p-4 text-sm">
           {NAV.map(({ href, label, icon: Icon }) => (
@@ -95,7 +95,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <header className="flex h-16 items-center justify-between border-b border-border/60 px-6 lg:hidden">
           <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
             <Goal className="size-5 text-primary" aria-hidden />
-            RealGoal
+            Voragoal
           </Link>
           {session?.user ? (
             <span className="text-xs text-muted-foreground">{session.user.email}</span>

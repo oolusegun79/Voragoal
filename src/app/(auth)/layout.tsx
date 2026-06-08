@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="mx-auto flex h-16 max-w-7xl items-center px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
             <Goal className="size-5 text-primary" aria-hidden />
-            <span>RealGoal</span>
+            <span>Voragoal</span>
           </Link>
         </div>
       </header>
