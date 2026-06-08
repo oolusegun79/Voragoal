@@ -67,12 +67,15 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-primary" aria-hidden />
               <span className="text-sm font-semibold text-primary">Tournament Pass</span>
-              <span className="ml-auto rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary">
-                $4.99
+              <span className="ml-auto flex items-center gap-1">
+                <span className="text-[10px] text-muted-foreground line-through">$7.99</span>
+                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary">
+                  $4.99
+                </span>
               </span>
             </div>
             <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
-              Unlock AI summaries, favourites & saved matches for the whole World Cup.
+              Save $3 — pre-kick-off price. Unlock AI summaries, favourites & saved matches.
             </p>
           </Link>
         ) : null}

@@ -34,8 +34,9 @@ export function DismissibleBanner() {
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <Sparkles className="size-4 shrink-0 text-accent" aria-hidden />
           <span className="truncate">
-            <span className="font-medium">Unlock AI summaries & favourites</span>
-            <span className="hidden text-muted-foreground sm:inline"> — one-time $4.99 for the whole tournament.</span>
+            <span className="font-medium">Pre-kick-off offer: $4.99</span>
+            <span className="ml-1.5 text-muted-foreground line-through">$7.99</span>
+            <span className="hidden text-muted-foreground sm:inline"> — Tournament Pass, ends 11 June.</span>
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-2">

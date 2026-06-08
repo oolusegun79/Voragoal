@@ -53,12 +53,20 @@ export default async function PricingPage({
       </header>
 
       <section className="mt-10 rounded-2xl border border-border/60 bg-card p-8">
-        <div className="flex items-baseline gap-2">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-medium text-warning">
+          <Sparkles className="size-3.5" />
+          Pre-kick-off offer · ends 11 June 2026
+        </div>
+        <div className="flex items-baseline gap-3">
           <span className="text-5xl font-bold tracking-tight">$4.99</span>
+          <span className="text-2xl font-medium text-muted-foreground line-through decoration-error/70">
+            $7.99
+          </span>
           <span className="text-sm text-muted-foreground">USD · one-time</span>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Full access from kick-off (11 June 2026) through the Final (19 July 2026).
+          Save <span className="font-medium text-success">$3.00</span> when you sign up before the
+          tournament kicks off. Full access from 11 June through the Final on 19 July 2026.
         </p>
 
         <ul className="mt-6 space-y-3 text-sm">
