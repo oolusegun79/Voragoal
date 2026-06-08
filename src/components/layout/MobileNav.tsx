@@ -38,7 +38,10 @@ export function MobileNav({
   return (
     <>
       <header className="flex h-16 items-center justify-between border-b border-border/60 px-4 lg:hidden">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+        <Link
+          href={userLabel ? "/dashboard" : "/"}
+          className="flex items-center gap-2 font-semibold tracking-tight"
+        >
           <Goal className="size-5 text-primary" aria-hidden />
           Voragoal
         </Link>
@@ -80,10 +83,13 @@ export function MobileNav({
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-border/60 px-4">
-          <span className="flex items-center gap-2 font-semibold tracking-tight">
+          <Link
+            href={userLabel ? "/dashboard" : "/"}
+            className="flex items-center gap-2 font-semibold tracking-tight"
+          >
             <Goal className="size-5 text-primary" aria-hidden />
             Voragoal
-          </span>
+          </Link>
           <button
             type="button"
             onClick={() => setOpen(false)}

@@ -25,10 +25,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="hidden w-60 shrink-0 border-r border-border/60 bg-background lg:flex lg:flex-col">
-        <div className="flex h-16 items-center gap-2 border-b border-border/60 px-6 font-semibold tracking-tight">
+        <Link
+          href={session?.user ? "/dashboard" : "/"}
+          className="flex h-16 items-center gap-2 border-b border-border/60 px-6 font-semibold tracking-tight hover:text-primary"
+        >
           <Goal className="size-5 text-primary" aria-hidden />
           Voragoal
-        </div>
+        </Link>
         <nav className="flex-1 space-y-1 p-4 text-sm">
           {NAV.map(({ href, label, icon: Icon }) => (
             <Link
