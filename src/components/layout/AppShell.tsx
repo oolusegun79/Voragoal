@@ -1,20 +1,11 @@
 import Link from "next/link";
-import { Goal, LayoutDashboard, CalendarDays, Flag, Trophy, GitBranch, User as UserIcon, Wrench, Sparkles } from "lucide-react";
+import { Goal, Sparkles } from "lucide-react";
 import { auth } from "@/server/auth/config";
 import { userHasPass } from "@/server/auth/access";
 import { Footer } from "@/components/layout/Footer";
 import { UpgradeBanner } from "@/components/paywall/UpgradeBanner";
-
-const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/matches",   label: "Matches",   icon: CalendarDays },
-  { href: "/teams",     label: "Teams",     icon: Flag },
-  { href: "/standings", label: "Standings", icon: Trophy },
-  { href: "/bracket",   label: "Bracket",   icon: GitBranch },
-  { href: "/profile",   label: "Profile",   icon: UserIcon },
-];
-
-const ADMIN_LINK = { href: "/admin", label: "Admin", icon: Wrench };
+import { MobileNav } from "@/components/layout/MobileNav";
+import { NAV, ADMIN_LINK } from "@/components/layout/nav-items";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -95,17 +86,12 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between border-b border-border/60 px-6 lg:hidden">
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <Goal className="size-5 text-primary" aria-hidden />
-            Voragoal
-          </Link>
-          {session?.user ? (
-            <span className="text-xs text-muted-foreground">{session.user.email}</span>
-          ) : (
-            <Link href="/login" className="text-sm text-primary">Log in</Link>
-          )}
-        </header>
+        <MobileNav
+          canAdmin={canAdmin}
+          userLabel={session?.user?.name ?? session?.user?.email ?? null}
+          userRole={session?.user?.role ?? null}
+          showUpgrade={showUpgrade}
+        />
         <UpgradeBanner />
         <main className="flex-1">{children}</main>
         <Footer />
