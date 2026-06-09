@@ -78,7 +78,7 @@ export function MobileNav({
       <aside
         id="mobile-nav-drawer"
         aria-label="Mobile navigation"
-        aria-hidden={!open}
+        inert={!open}
         className={`fixed inset-y-0 right-0 z-50 flex w-72 max-w-[85vw] flex-col border-l border-border/60 bg-background shadow-2xl transition-transform duration-200 lg:hidden ${
           open ? "translate-x-0" : "translate-x-full pointer-events-none"
         }`}
