@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Content Security Policy. Pragmatic, not strict: Next.js + Tailwind v4 both
 // inject inline scripts/styles for hydration data and CSS variables, so
@@ -46,4 +47,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap the Next.js config with Sentry's webpack plugin. When SENTRY_AUTH_TOKEN
+// is missing (local dev, preview deploys), the plugin skips source map upload
+// silently. When it's present (production), source maps are uploaded so
+// stack traces in the Sentry dashboard show readable source instead of
+// minified bundles.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+  widenClientFileUpload: true,
+  disableLogger: true,
+  // Only run the upload step when we have an auth token; otherwise the
+  // plugin is a no-op wrapper.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+});
