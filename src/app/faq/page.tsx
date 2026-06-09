@@ -145,11 +145,13 @@ const SECTIONS: Section[] = [
         q: "How do I reset my password?",
         a: (
           <>
-            Password reset will be available shortly after launch. In the meantime, contact{" "}
-            <a className="underline" href="mailto:support@voragoal.com">
-              support@voragoal.com
-            </a>{" "}
-            and we will reset your password manually.
+            On the{" "}
+            <Link className="underline" href="/login">
+              login page
+            </Link>
+            , click <span className="font-medium">Forgot password?</span> Enter your email and we
+            will send you a reset link that&apos;s valid for 1 hour. If you signed up with Google,
+            you don&apos;t have a password — sign in with Google instead.
           </>
         ),
       },

@@ -45,6 +45,14 @@ export default function LoginPage() {
             minLength={1}
           />
         </FormField>
+        <div className="-mt-2 text-right">
+          <Link
+            href="/forgot-password"
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <SubmitButton pending={pending}>Log in</SubmitButton>
         <p className="text-center text-sm text-muted-foreground">
           New here?{" "}

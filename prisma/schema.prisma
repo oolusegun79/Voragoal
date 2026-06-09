@@ -75,6 +75,19 @@ model User {
   sessions          Session[]
   accounts          Account[]
   purchases         Purchase[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique                                                  // sha256 of the random token sent in email
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 enum PurchaseStatus {
