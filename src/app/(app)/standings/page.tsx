@@ -26,13 +26,13 @@ export default async function StandingsPage() {
             <table className="w-full text-sm">
               <thead className="text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium">Team</th>
+                  <th className="px-2 py-2 text-left font-medium sm:px-3">Team</th>
                   <Th>P</Th>
                   <Th>W</Th>
                   <Th>D</Th>
                   <Th>L</Th>
-                  <Th>GF</Th>
-                  <Th>GA</Th>
+                  <Th className="hidden sm:table-cell">GF</Th>
+                  <Th className="hidden sm:table-cell">GA</Th>
                   <Th>GD</Th>
                   <Th className="text-foreground">Pts</Th>
                 </tr>
@@ -43,22 +43,23 @@ export default async function StandingsPage() {
                     key={r.teamId}
                     className="border-t border-border/40"
                   >
-                    <td className="px-3 py-2">
+                    <td className="max-w-0 px-2 py-2 sm:px-3">
                       <Link
                         href={`/teams/${r.teamId}`}
-                        className="inline-flex items-center gap-2 hover:text-primary"
+                        className="flex items-center gap-2 hover:text-primary"
                       >
-                        <span className="w-4 text-xs text-muted-foreground">{i + 1}</span>
-                        <span aria-hidden><FlagIcon emoji={r.flagEmoji} /></span>
-                        <span className="truncate">{r.teamName}</span>
+                        <span className="w-3 shrink-0 text-xs text-muted-foreground">{i + 1}</span>
+                        <span aria-hidden className="shrink-0"><FlagIcon emoji={r.flagEmoji} /></span>
+                        <span className="truncate sm:hidden">{r.teamId}</span>
+                        <span className="hidden truncate sm:inline">{r.teamName}</span>
                       </Link>
                     </td>
                     <Td>{r.played}</Td>
                     <Td>{r.won}</Td>
                     <Td>{r.drawn}</Td>
                     <Td>{r.lost}</Td>
-                    <Td>{r.goalsFor}</Td>
-                    <Td>{r.goalsAgainst}</Td>
+                    <Td className="hidden sm:table-cell">{r.goalsFor}</Td>
+                    <Td className="hidden sm:table-cell">{r.goalsAgainst}</Td>
                     <Td>{r.goalDifference > 0 ? `+${r.goalDifference}` : r.goalDifference}</Td>
                     <Td bold>{r.points}</Td>
                   </tr>
@@ -78,12 +79,20 @@ function Th({ children, className = "" }: { children: React.ReactNode; className
   );
 }
 
-function Td({ children, bold = false }: { children: React.ReactNode; bold?: boolean }) {
+function Td({
+  children,
+  bold = false,
+  className = "",
+}: {
+  children: React.ReactNode;
+  bold?: boolean;
+  className?: string;
+}) {
   return (
     <td
       className={`px-2 py-2 text-center font-mono text-xs tabular-nums ${
         bold ? "font-semibold text-foreground" : "text-muted-foreground"
-      }`}
+      } ${className}`}
     >
       {children}
     </td>
