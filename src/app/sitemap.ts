@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/standings",
     "/bracket",
     "/pricing",
+    "/faq",
     "/privacy",
     "/terms",
   ].map((p) => ({ url: `${base}${p}`, changeFrequency: "daily", priority: p === "/" ? 1 : 0.8 }));

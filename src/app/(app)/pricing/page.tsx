@@ -110,7 +110,11 @@ export default async function PricingPage({
       </section>
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        Questions? Email{" "}
+        Have questions? Check the{" "}
+        <a className="underline hover:text-foreground" href="/faq">
+          FAQ
+        </a>{" "}
+        or email{" "}
         <a className="underline" href="mailto:support@voragoal.com">
           support@voragoal.com
         </a>

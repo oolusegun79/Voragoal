@@ -44,6 +44,7 @@ export function Footer() {
             ))}
           </div>
           <span aria-hidden className="text-border/80">·</span>
+          <Link href="/faq" className="hover:text-foreground">FAQ</Link>
           <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
           <Link href="/terms" className="hover:text-foreground">Terms</Link>
         </nav>
