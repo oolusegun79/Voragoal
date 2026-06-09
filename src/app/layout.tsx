@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "flag-icons/css/flag-icons.min.css";
 import "./globals.css";
@@ -24,6 +24,16 @@ export const metadata: Metadata = {
   applicationName: "Voragoal",
   metadataBase: new URL("https://voragoal.com"),
   robots: { index: true, follow: true },
+  appleWebApp: {
+    capable: true,
+    title: "Voragoal",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b1020",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
