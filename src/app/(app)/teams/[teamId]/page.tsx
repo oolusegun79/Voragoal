@@ -8,7 +8,7 @@ import { TeamCrest } from "@/components/team/TeamCrest";
 import { FlagIcon } from "@/components/team/FlagIcon";
 import { FavoriteToggle } from "@/components/favorites/FavoriteToggle";
 import { AiSummaryCard } from "@/components/ai/AiSummaryCard";
-import { formatKickoff } from "@/lib/formatters";
+import { LocalTime } from "@/components/LocalTime";
 
 const POSITION_LABELS = {
   GK: "Goalkeepers",
@@ -133,7 +133,7 @@ export default async function TeamDetailPage({
                   className="grid grid-cols-[auto_1fr_auto_1fr_auto] items-center gap-4 border-b border-border/40 px-4 py-3 transition last:border-b-0 hover:bg-card-muted"
                 >
                   <span className="font-mono text-xs text-muted-foreground">
-                    {formatKickoff(m.kickoffAt)}
+                    <LocalTime iso={m.kickoffAt.toISOString()} />
                   </span>
                   <div className="flex items-center justify-end">
                     <TeamCrest

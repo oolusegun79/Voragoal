@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { computeBracket, type BracketCell, type ResolvedSlot } from "@/server/services/bracketService";
 import { FlagIcon } from "@/components/team/FlagIcon";
-import { formatDateOnly, formatTimeOnly } from "@/lib/formatters";
+import { LocalTime } from "@/components/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +78,7 @@ function Cell({ cell }: { cell: BracketCell }) {
       <div className="mb-1 flex items-center justify-between gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
         <span>M{cell.matchNumber}</span>
         <span className="whitespace-nowrap text-[8px] tracking-normal">
-          {formatDateOnly(cell.kickoffAt)} · {formatTimeOnly(cell.kickoffAt)}
+          <LocalTime iso={cell.kickoffAt.toISOString()} variant="date" /> · <LocalTime iso={cell.kickoffAt.toISOString()} variant="time" />
         </span>
       </div>
       <SlotRow slot={cell.home} score={cell.homeScore} penalties={cell.homePenalties} />

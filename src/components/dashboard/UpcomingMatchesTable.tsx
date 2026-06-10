@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { Match, Team, Venue } from "@prisma/client";
 import { TeamCrest } from "@/components/team/TeamCrest";
-import { formatKickoff } from "@/lib/formatters";
+import { LocalTime } from "@/components/LocalTime";
 
 type UpcomingMatch = Match & {
   homeTeam: Team;
@@ -39,7 +39,7 @@ export function UpcomingMatchesTable({ matches }: { matches: UpcomingMatch[] }) 
               <TeamCrest flagEmoji={m.awayTeam.flagEmoji} shortName={m.awayTeam.shortName} accentColor={m.awayTeam.accentColor} size="sm" />
             </div>
             <div className="hidden items-center gap-3 text-xs text-muted-foreground sm:flex">
-              <span>{formatKickoff(m.kickoffAt)}</span>
+              <span><LocalTime iso={m.kickoffAt.toISOString()} /></span>
               {m.venue ? <span>· {m.venue.name}</span> : null}
               <ChevronRight className="size-4" />
             </div>

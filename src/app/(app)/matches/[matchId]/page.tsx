@@ -14,7 +14,7 @@ import { MatchLineups } from "@/components/match/MatchLineups";
 import { LiveScorePoller } from "@/components/match/LiveScorePoller";
 import { LiveMatchClock } from "@/components/admin/live/LiveMatchClock";
 import { AiSummaryCard } from "@/components/ai/AiSummaryCard";
-import { formatKickoff } from "@/lib/formatters";
+import { LocalTime } from "@/components/LocalTime";
 
 const TABS: TabKey[] = ["timeline", "stats", "lineups", "ai"];
 
@@ -87,7 +87,7 @@ export default async function MatchDetailPage({
               : match.stage.replaceAll("_", " ")}
           </span>
           <span>·</span>
-          <span>{formatKickoff(match.kickoffAt)}</span>
+          <span><LocalTime iso={match.kickoffAt.toISOString()} /></span>
           {match.venue ? (
             <>
               <span>·</span>

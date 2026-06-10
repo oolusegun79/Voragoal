@@ -3,7 +3,8 @@ import { ChevronRight } from "lucide-react";
 import { listMatches, type MatchFilters } from "@/server/services/matchService";
 import { listTeams } from "@/server/services/teamService";
 import { TeamCrest } from "@/components/team/TeamCrest";
-import { formatTimeOnly, groupByDay } from "@/lib/formatters";
+import { groupByDay } from "@/lib/formatters";
+import { LocalTime } from "@/components/LocalTime";
 import type { MatchStage, MatchStatus } from "@prisma/client";
 
 const STAGES: MatchStage[] = ["GROUP", "R32", "R16", "QF", "SF", "THIRD_PLACE", "FINAL"];
@@ -124,7 +125,7 @@ export default async function MatchesPage({
                           </span>
                         ) : (
                           <span className="font-mono text-sm text-muted-foreground">
-                            {formatTimeOnly(m.kickoffAt)}
+                            <LocalTime iso={m.kickoffAt.toISOString()} variant="time" />
                           </span>
                         )}
                       </div>

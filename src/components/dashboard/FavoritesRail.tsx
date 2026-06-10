@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Star } from "lucide-react";
 import type { favoriteTeamsWithNext } from "@/server/services/favoritesService";
 import { FlagIcon } from "@/components/team/FlagIcon";
-import { formatKickoff } from "@/lib/formatters";
+import { LocalTime } from "@/components/LocalTime";
 
 type Row = Awaited<ReturnType<typeof favoriteTeamsWithNext>>[number];
 
@@ -45,7 +45,7 @@ export function FavoritesRail({ rows }: { rows: Row[] }) {
                   Next: {nextMatch.homeTeamId === team.id ? "vs " : "@ "}
                   {nextMatch.homeTeamId === team.id ? nextMatch.awayTeam.shortName : nextMatch.homeTeam.shortName}
                   {" · "}
-                  {formatKickoff(nextMatch.kickoffAt)}
+                  <LocalTime iso={nextMatch.kickoffAt.toISOString()} />
                 </p>
               ) : (
                 <p className="mt-0.5 text-xs text-muted-foreground">No upcoming match</p>

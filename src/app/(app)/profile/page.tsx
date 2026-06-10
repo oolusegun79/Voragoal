@@ -9,7 +9,7 @@ import {
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { TeamCrest } from "@/components/team/TeamCrest";
 import { FlagIcon } from "@/components/team/FlagIcon";
-import { formatKickoff } from "@/lib/formatters";
+import { LocalTime } from "@/components/LocalTime";
 
 const TABS = ["account", "favorites", "saved"] as const;
 type Tab = (typeof TABS)[number];
@@ -154,7 +154,7 @@ export default async function ProfilePage({
                       <TeamCrest flagEmoji={m.awayTeam.flagEmoji} shortName={m.awayTeam.shortName} accentColor={m.awayTeam.accentColor} size="sm" />
                     </div>
                     <span className="hidden text-xs text-muted-foreground sm:inline">
-                      {formatKickoff(m.kickoffAt)}
+                      <LocalTime iso={m.kickoffAt.toISOString()} />
                     </span>
                   </Link>
                 ))}
