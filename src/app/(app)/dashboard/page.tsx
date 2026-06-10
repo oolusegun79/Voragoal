@@ -15,6 +15,7 @@ import { TopScorersChart } from "@/components/charts/TopScorersChart";
 import { ResultsDonut } from "@/components/charts/ResultsDonut";
 import { FavoritesRail } from "@/components/dashboard/FavoritesRail";
 import { UpcomingMatchesTable } from "@/components/dashboard/UpcomingMatchesTable";
+import { KickoffCountdown } from "@/components/dashboard/KickoffCountdown";
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -27,6 +28,11 @@ export default async function DashboardPage() {
     favoriteTeamsWithNext(user.id),
   ]);
 
+  const firstMatch = upcoming[0] ?? null;
+  const firstMatchLabel = firstMatch
+    ? `${firstMatch.homeTeam.flagEmoji} ${firstMatch.homeTeam.shortName} vs ${firstMatch.awayTeam.shortName} ${firstMatch.awayTeam.flagEmoji}${firstMatch.venue ? ` · ${firstMatch.venue.name}` : ""}`
+    : null;
+
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-6 py-8">
       <header>
@@ -35,6 +41,11 @@ export default async function DashboardPage() {
           {user.name ?? user.email}
         </h1>
       </header>
+
+      <KickoffCountdown
+        firstKickoffIso={firstMatch ? firstMatch.kickoffAt.toISOString() : null}
+        firstMatchLabel={firstMatchLabel}
+      />
 
       {/* Row 1: KPI cards */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">

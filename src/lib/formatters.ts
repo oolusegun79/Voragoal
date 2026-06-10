@@ -5,7 +5,7 @@ export function formatKickoff(date: Date): string {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    hour12: true,
+    hour12: false,
     timeZoneName: "short",
   }).format(date);
 }
@@ -22,7 +22,7 @@ export function formatTimeOnly(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    hour12: true,
+    hour12: false,
   }).format(date);
 }
 

@@ -43,7 +43,7 @@ function format(date: Date, variant: Variant, timeZone?: string): string {
     Object.assign(opts, {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
+      hour12: false,
     });
   } else {
     Object.assign(opts, {
@@ -52,7 +52,7 @@ function format(date: Date, variant: Variant, timeZone?: string): string {
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
+      hour12: false,
       timeZoneName: "short",
     });
   }
