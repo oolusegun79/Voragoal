@@ -75,6 +75,11 @@ export default function TermsPage() {
                 19 July 2026).
               </li>
               <li>
+                The Pass also unlocks the full knockout bracket once 5 or more teams have qualified to it.
+                The bracket remains free to view in the lead-up to the tournament while it is still mostly
+                placeholder slots.
+              </li>
+              <li>
                 The Pass is not a subscription — it does not auto-renew, and you will not be charged again.
               </li>
               <li>

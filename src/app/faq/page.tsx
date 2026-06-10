@@ -59,7 +59,9 @@ const SECTIONS: Section[] = [
             The $4.99 Tournament Pass unlocks: AI match summaries (pre-match, half-time, full-time),
             AI team and player insights, the ability to favourite teams and players for a
             personalised dashboard, and saving matches to watch later. The schedule, standings,
-            group tables, and knockout bracket are free for everyone.
+            and group tables are free for everyone. The full knockout bracket is free to view in
+            the lead-up to the tournament and becomes part of the Pass once 5 or more teams have
+            qualified to it.
           </>
         ),
       },
@@ -103,6 +105,19 @@ const SECTIONS: Section[] = [
             Yes — the charge will appear as <span className="font-mono">VORAGOAL</span> or{" "}
             <span className="font-mono">VORAGOAL.COM</span> via Stripe. If you see something else,
             it is not us.
+          </>
+        ),
+      },
+      {
+        q: "Why does the bracket become a paid feature once qualifiers are in?",
+        a: (
+          <>
+            While the bracket is mostly placeholder labels like{" "}
+            <span className="font-mono">1A</span> or <span className="font-mono">3ABCDF</span>,
+            there is not much to gate — anyone can browse it for free. Once 5 or more teams have
+            actually qualified to the bracket it becomes a useful tournament-tracking tool, and at
+            that point it moves behind the Tournament Pass alongside AI insights, favourites, and
+            saved matches. The standings and group tables stay free throughout the tournament.
           </>
         ),
       },

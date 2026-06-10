@@ -216,6 +216,20 @@ function resolveSlot(s: Slot, ctx: Ctx): ResolvedSlot {
   }
 }
 
+/**
+ * How many distinct teams currently have a slot in the bracket. Used to gate
+ * the public /bracket page: free users see it unblurred while populated <= 4,
+ * then see a paywall once it crosses to 5+.
+ */
+export function countPopulatedTeams(cells: BracketCell[]): number {
+  const ids = new Set<string>();
+  for (const cell of cells) {
+    if (cell.home.resolved) ids.add(cell.home.team.teamId);
+    if (cell.away.resolved) ids.add(cell.away.team.teamId);
+  }
+  return ids.size;
+}
+
 export async function computeBracket(): Promise<BracketCell[]> {
   const [teams, venues, groupMatches, knockoutMatches, standings] = await Promise.all([
     prisma.team.findMany(),

@@ -1,7 +1,15 @@
 import Link from "next/link";
-import { computeBracket, type BracketCell, type ResolvedSlot } from "@/server/services/bracketService";
+import {
+  computeBracket,
+  countPopulatedTeams,
+  type BracketCell,
+  type ResolvedSlot,
+} from "@/server/services/bracketService";
 import { FlagIcon } from "@/components/team/FlagIcon";
 import { LocalTime } from "@/components/LocalTime";
+import { PaywallCard } from "@/components/paywall/PaywallCard";
+import { auth } from "@/server/auth/config";
+import { userHasPass } from "@/server/auth/access";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +26,36 @@ const HEADER_COLS: Array<{ col: number; label: string }> = [
 ];
 
 export default async function BracketPage() {
-  const cells = await computeBracket();
+  const [cells, session] = await Promise.all([computeBracket(), auth()]);
+  const hasPass = await userHasPass(session?.user?.id);
+  const populated = countPopulatedTeams(cells);
+  const showPaywall = !hasPass && populated > 4;
+
+  const bracketGrid = (
+    <div className="overflow-x-auto rounded-xl border border-border/60 bg-card/40 p-4">
+      <div
+        className="grid min-w-[1400px] gap-x-3 gap-y-2"
+        style={{
+          gridTemplateColumns: "repeat(9, minmax(0, 1fr))",
+          gridTemplateRows: "auto repeat(16, minmax(36px, auto))",
+        }}
+      >
+        {HEADER_COLS.map((h) => (
+          <div
+            key={h.col}
+            className="px-2 pb-2 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground"
+            style={{ gridColumnStart: h.col, gridColumnEnd: h.col + 1, gridRowStart: 1, gridRowEnd: 2 }}
+          >
+            {h.label}
+          </div>
+        ))}
+
+        {cells.map((cell) => (
+          <Cell key={cell.matchNumber} cell={cell} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="mx-auto max-w-[1500px] px-6 py-8">
@@ -30,37 +67,36 @@ export default async function BracketPage() {
         </p>
       </header>
 
-      <div className="overflow-x-auto rounded-xl border border-border/60 bg-card/40 p-4">
-        <div
-          className="grid min-w-[1400px] gap-x-3 gap-y-2"
-          style={{
-            gridTemplateColumns: "repeat(9, minmax(0, 1fr))",
-            gridTemplateRows: "auto repeat(16, minmax(36px, auto))",
-          }}
-        >
-          {HEADER_COLS.map((h) => (
-            <div
-              key={h.col}
-              className="px-2 pb-2 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground"
-              style={{ gridColumnStart: h.col, gridColumnEnd: h.col + 1, gridRowStart: 1, gridRowEnd: 2 }}
-            >
-              {h.label}
+      {showPaywall ? (
+        <div className="relative">
+          <div
+            aria-hidden
+            className="pointer-events-none select-none blur-md"
+          >
+            {bracketGrid}
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-background/40 p-6">
+            <div className="w-full max-w-md">
+              <PaywallCard
+                title="The full bracket is part of the Tournament Pass"
+                body={`${populated} teams have qualified so far. Unlock the full Round-of-32 through Final bracket with the $4.99 Tournament Pass — pre-kick-off price, normally $7.99.`}
+              />
             </div>
-          ))}
-
-          {cells.map((cell) => (
-            <Cell key={cell.matchNumber} cell={cell} />
-          ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        bracketGrid
+      )}
 
-      <p className="mt-4 text-xs text-muted-foreground">
-        Group-position slots (e.g. <span className="font-mono">1E</span>,{" "}
-        <span className="font-mono">2A</span>) resolve once all 6 matches in that group are
-        finished. Best-third-placed slots (e.g. <span className="font-mono">3ABCDF</span>) are
-        finalised by FIFA after the group stage and will be filled in once the matching
-        Round-of-32 fixture is created in Admin.
-      </p>
+      {showPaywall ? null : (
+        <p className="mt-4 text-xs text-muted-foreground">
+          Group-position slots (e.g. <span className="font-mono">1E</span>,{" "}
+          <span className="font-mono">2A</span>) resolve once all 6 matches in that group are
+          finished. Best-third-placed slots (e.g. <span className="font-mono">3ABCDF</span>) are
+          finalised by FIFA after the group stage and will be filled in once the matching
+          Round-of-32 fixture is created in Admin.
+        </p>
+      )}
     </div>
   );
 }
