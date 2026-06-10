@@ -63,9 +63,21 @@ export function KickoffCountdown({
   return (
     <section
       aria-labelledby="kickoff-countdown-heading"
-      className="overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-5"
+      className="relative overflow-hidden rounded-xl border border-primary/30"
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Layer 1 — faded brand hero image */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-cover bg-center opacity-30"
+        style={{ backgroundImage: "url(/brand/og.jpeg)" }}
+      />
+      {/* Layer 2 — gradient overlay so content stays legible */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-br from-background/85 via-background/60 to-background/85"
+      />
+      {/* Layer 3 — content */}
+      <div className="relative z-10 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary">
             <Sparkles className="size-3.5" aria-hidden />
