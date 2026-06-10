@@ -43,9 +43,14 @@ export function HeroCountdown() {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return (
-    <div className="inline-flex items-center gap-3 rounded-full border border-primary/30 bg-card/70 px-4 py-2 backdrop-blur">
-      <span className="text-xs uppercase tracking-wider text-primary">Kick-off in</span>
-      <span className="font-mono text-sm font-semibold tabular-nums" aria-live="polite">
+    <div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-primary/30 bg-card/70 px-6 py-3 backdrop-blur sm:gap-4 sm:px-8 sm:py-4">
+      <span className="text-sm font-semibold uppercase tracking-wider text-primary sm:text-base">
+        Kick-off in
+      </span>
+      <span
+        className="font-mono text-xl font-bold tabular-nums sm:text-2xl"
+        aria-live="polite"
+      >
         {mounted ? (
           <>
             <span>{remaining.days}d </span>

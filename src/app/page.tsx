@@ -1,18 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  ArrowRight,
-  BarChart3,
-  CalendarDays,
-  Check,
-  Flag,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight, BarChart3, CalendarDays, Sparkles, Trophy } from "lucide-react";
 import { MarketingHeader } from "@/components/layout/MarketingHeader";
 import { Footer } from "@/components/layout/Footer";
 import { HeroCountdown } from "@/components/marketing/HeroCountdown";
 import { auth } from "@/server/auth/config";
+import { prisma } from "@/server/db";
 
 const features = [
   {
@@ -38,12 +31,6 @@ const features = [
   },
 ];
 
-const numbers = [
-  { value: "104", label: "Matches" },
-  { value: "48", label: "Teams" },
-  { value: "12", label: "Host cities" },
-  { value: "3", label: "Countries" },
-];
 
 const hosts = [
   { code: "CAN", name: "Canada", flag: "🇨🇦" },
@@ -51,25 +38,21 @@ const hosts = [
   { code: "USA", name: "United States", flag: "🇺🇸" },
 ];
 
-const includedFree = [
-  "Full schedule of 104 matches",
-  "All 48 team profiles and squad rosters",
-  "Group standings and knockout bracket",
-  "Individual player profiles",
-];
-
-const includedPass = [
-  "AI match summaries — pre-match, half-time, full-time",
-  "AI team and player insights",
-  "Favourite teams and players for a personalised dashboard",
-  "Save matches to watch later",
-];
-
 export default async function Home() {
   const session = await auth();
   if (session?.user) {
     redirect("/dashboard");
   }
+
+  // Player count is dynamic so the number stays accurate as the admin adds
+  // confirmed squads. Other figures are tournament constants.
+  const playerCount = await prisma.player.count().catch(() => 1248);
+  const numbers = [
+    { value: "104", label: "Matches" },
+    { value: "48", label: "Teams" },
+    { value: "12", label: "Host cities" },
+    { value: playerCount.toLocaleString(), label: "Players" },
+  ];
 
   return (
     <>
@@ -194,53 +177,22 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* What's included */}
+        {/* Free to register */}
         <section className="border-y border-border/40 bg-card/20">
-          <div className="mx-auto grid max-w-5xl gap-6 px-6 py-20 lg:grid-cols-2">
-            <div className="rounded-2xl border border-border/60 bg-card/60 p-6">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-                <Flag className="size-3.5" aria-hidden /> Free for everyone
-              </div>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight">No account required</h3>
-              <ul className="mt-4 space-y-2 text-sm">
-                {includedFree.map((line) => (
-                  <li key={line} className="flex items-start gap-2 text-muted-foreground">
-                    <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-6">
-              <div className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-warning">
-                <Sparkles className="size-3" /> Pre-kick-off offer
-              </div>
-              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary">
-                <Sparkles className="size-3.5" aria-hidden /> Tournament Pass
-              </div>
-              <h3 className="mt-2 flex items-baseline gap-2 text-2xl font-semibold tracking-tight">
-                $4.99
-                <span className="text-lg font-medium text-muted-foreground line-through decoration-error/70">
-                  $7.99
-                </span>
-                <span className="text-xs font-normal text-muted-foreground">USD · one-time</span>
-              </h3>
-              <ul className="mt-4 space-y-2 text-sm">
-                {includedPass.map((line) => (
-                  <li key={line} className="flex items-start gap-2 text-muted-foreground">
-                    <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/pricing"
-                className="mt-5 inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-              >
-                Get the Pass
-                <ArrowRight className="size-4" />
-              </Link>
-            </div>
+          <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              Free to register.
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+              No card, no commitment. Sign up in seconds and start exploring the tournament.
+            </p>
+            <Link
+              href="/signup"
+              className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+            >
+              Create your free account
+              <ArrowRight className="size-4" />
+            </Link>
           </div>
         </section>
 
