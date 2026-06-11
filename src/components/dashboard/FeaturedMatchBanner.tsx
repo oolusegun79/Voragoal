@@ -21,6 +21,9 @@ export type FeaturedMatchBannerProps = {
   groupCode: string | null;
   kickoffIso: string;
   status: "SCHEDULED" | "LIVE" | "FINISHED" | "POSTPONED" | "CANCELLED";
+  kickoffStartedAtIso: string | null;
+  secondHalfStartedAtIso: string | null;
+  addedMinutes1H: number | null;
   homeTeam: Team;
   awayTeam: Team;
   homeScore: number | null;
@@ -50,6 +53,9 @@ export function FeaturedMatchBanner(props: FeaturedMatchBannerProps) {
     groupCode,
     kickoffIso,
     status,
+    kickoffStartedAtIso,
+    secondHalfStartedAtIso,
+    addedMinutes1H,
     homeTeam,
     awayTeam,
     homeScore,
@@ -57,6 +63,12 @@ export function FeaturedMatchBanner(props: FeaturedMatchBannerProps) {
     venueName,
     venueCity,
   } = props;
+
+  const isHalfTime =
+    status === "LIVE" &&
+    kickoffStartedAtIso != null &&
+    secondHalfStartedAtIso == null &&
+    addedMinutes1H != null;
 
   const [mounted, setMounted] = useState(false);
   const [nowMs, setNowMs] = useState<number>(Date.now());
@@ -70,6 +82,13 @@ export function FeaturedMatchBanner(props: FeaturedMatchBannerProps) {
 
   const statusPill = (() => {
     if (status === "LIVE") {
+      if (isHalfTime) {
+        return (
+          <span className="rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-warning">
+            Half time
+          </span>
+        );
+      }
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-error/15 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-error">
           <span className="size-1.5 animate-pulse rounded-full bg-error" />

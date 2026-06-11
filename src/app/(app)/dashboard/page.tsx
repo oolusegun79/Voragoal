@@ -47,6 +47,9 @@ export default async function DashboardPage() {
           groupCode={featured.match.groupCode}
           kickoffIso={featured.match.kickoffAt.toISOString()}
           status={featured.match.status}
+          kickoffStartedAtIso={featured.match.kickoffStartedAt?.toISOString() ?? null}
+          secondHalfStartedAtIso={featured.match.secondHalfStartedAt?.toISOString() ?? null}
+          addedMinutes1H={featured.match.addedMinutes1H}
           homeTeam={{
             id: featured.match.homeTeam.id,
             shortName: featured.match.homeTeam.shortName,
