@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Trash2, Radio } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Radio } from "lucide-react";
 import { prisma } from "@/server/db";
 import { getMatchById } from "@/server/services/matchService";
 import { TeamCrest } from "@/components/team/TeamCrest";
 import { FlagIcon } from "@/components/team/FlagIcon";
 import { EventForm } from "@/components/admin/EventForm";
+import { EditEventPanel } from "@/components/admin/EditEventPanel";
 import { formatKickoff } from "@/lib/formatters";
 import { deleteEventAction, recomputeScoreAction, setStatusAction } from "./actions";
 
@@ -13,10 +14,13 @@ const STATUSES = ["SCHEDULED", "LIVE", "FINISHED", "POSTPONED", "CANCELLED"] as 
 
 export default async function AdminMatchEventsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ matchId: string }>;
+  searchParams: Promise<{ edit?: string }>;
 }) {
   const { matchId } = await params;
+  const { edit: editId } = await searchParams;
   const match = await getMatchById(matchId);
   if (!match) notFound();
 
@@ -30,6 +34,8 @@ export default async function AdminMatchEventsPage({
       orderBy: [{ position: "asc" }, { shirtNumber: "asc" }],
     }),
   ]);
+
+  const editingEvent = editId ? match.events.find((e) => e.id === editId) : null;
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
@@ -111,51 +117,92 @@ export default async function AdminMatchEventsPage({
             </p>
           ) : (
             <ul className="space-y-1.5">
-              {match.events.map((e) => (
-                <li
-                  key={e.id}
-                  className="grid grid-cols-[60px_1fr_auto] items-center gap-3 rounded-md border border-border/40 bg-card px-3 py-2 text-sm"
-                >
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {e.minute}{e.addedMinute ? `+${e.addedMinute}` : ""}'
-                  </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <TeamCrest flagEmoji={e.team.flagEmoji} shortName={e.team.shortName} size="sm" />
-                    <span className="text-muted-foreground">{e.type.replaceAll("_", " ")}</span>
-                    {e.player ? (
-                      <span className="font-medium">{e.player.knownAs ?? e.player.fullName}</span>
-                    ) : null}
-                    {e.relatedPlayer ? (
-                      <span className="text-muted-foreground">
-                        ({e.relatedPlayer.knownAs ?? e.relatedPlayer.fullName})
-                      </span>
-                    ) : null}
-                    {e.detail ? <span className="text-muted-foreground">— {e.detail}</span> : null}
-                  </div>
-                  <form action={deleteEventAction}>
-                    <input type="hidden" name="eventId" value={e.id} />
-                    <input type="hidden" name="matchId" value={match.id} />
-                    <button
-                      type="submit"
-                      aria-label="Delete event"
-                      className="inline-flex size-7 items-center justify-center rounded text-muted-foreground transition hover:bg-error/10 hover:text-error"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </form>
-                </li>
-              ))}
+              {match.events.map((e) => {
+                const isEditing = editingEvent?.id === e.id;
+                return (
+                  <li
+                    key={e.id}
+                    className={`grid grid-cols-[60px_1fr_auto] items-center gap-3 rounded-md border px-3 py-2 text-sm transition ${
+                      isEditing
+                        ? "border-primary/60 bg-primary/5 ring-1 ring-primary/30"
+                        : "border-border/40 bg-card"
+                    }`}
+                  >
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {e.minute}{e.addedMinute ? `+${e.addedMinute}` : ""}'
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <TeamCrest flagEmoji={e.team.flagEmoji} shortName={e.team.shortName} size="sm" />
+                      <span className="text-muted-foreground">{e.type.replaceAll("_", " ")}</span>
+                      {e.player ? (
+                        <span className="font-medium">{e.player.knownAs ?? e.player.fullName}</span>
+                      ) : null}
+                      {e.relatedPlayer ? (
+                        <span className="text-muted-foreground">
+                          ({e.relatedPlayer.knownAs ?? e.relatedPlayer.fullName})
+                        </span>
+                      ) : null}
+                      {e.detail ? <span className="text-muted-foreground">— {e.detail}</span> : null}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={isEditing ? `/admin/matches/${match.id}/events` : `?edit=${e.id}`}
+                        aria-label={isEditing ? "Stop editing" : "Edit event"}
+                        className={`inline-flex size-7 items-center justify-center rounded transition ${
+                          isEditing
+                            ? "bg-primary/15 text-primary hover:bg-primary/25"
+                            : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                        }`}
+                      >
+                        <Pencil className="size-3.5" />
+                      </Link>
+                      <form action={deleteEventAction}>
+                        <input type="hidden" name="eventId" value={e.id} />
+                        <input type="hidden" name="matchId" value={match.id} />
+                        <button
+                          type="submit"
+                          aria-label="Delete event"
+                          className="inline-flex size-7 items-center justify-center rounded text-muted-foreground transition hover:bg-error/10 hover:text-error"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </form>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
 
         <aside className="rounded-xl border border-border/60 bg-card p-5">
-          <h2 className="mb-4 text-sm font-medium tracking-tight">Add event</h2>
-          <EventForm
-            matchId={match.id}
-            home={{ team: match.homeTeam, players: homeSquad }}
-            away={{ team: match.awayTeam, players: awaySquad }}
-          />
+          {editingEvent ? (
+            <EditEventPanel
+              matchId={match.id}
+              home={{ team: match.homeTeam, players: homeSquad }}
+              away={{ team: match.awayTeam, players: awaySquad }}
+              editing={{
+                id: editingEvent.id,
+                matchId: match.id,
+                minute: editingEvent.minute,
+                addedMinute: editingEvent.addedMinute,
+                type: editingEvent.type,
+                teamId: editingEvent.teamId,
+                playerId: editingEvent.playerId,
+                relatedPlayerId: editingEvent.relatedPlayerId,
+                detail: editingEvent.detail,
+              }}
+            />
+          ) : (
+            <>
+              <h2 className="mb-4 text-sm font-medium tracking-tight">Add event</h2>
+              <EventForm
+                matchId={match.id}
+                home={{ team: match.homeTeam, players: homeSquad }}
+                away={{ team: match.awayTeam, players: awaySquad }}
+              />
+            </>
+          )}
         </aside>
       </div>
     </div>
