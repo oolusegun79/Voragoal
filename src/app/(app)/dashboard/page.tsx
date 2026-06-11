@@ -1,6 +1,7 @@
 import { CalendarDays, Goal, Sparkles, Target } from "lucide-react";
 import { requireUser } from "@/server/auth/guards";
 import {
+  getFeaturedMatch,
   getGoalsByTeam,
   getResultsSplit,
   getTopScorers,
@@ -15,23 +16,19 @@ import { TopScorersChart } from "@/components/charts/TopScorersChart";
 import { ResultsDonut } from "@/components/charts/ResultsDonut";
 import { FavoritesRail } from "@/components/dashboard/FavoritesRail";
 import { UpcomingMatchesTable } from "@/components/dashboard/UpcomingMatchesTable";
-import { KickoffCountdown } from "@/components/dashboard/KickoffCountdown";
+import { FeaturedMatchBanner } from "@/components/dashboard/FeaturedMatchBanner";
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [kpis, goalsByTeam, topScorers, results, upcoming, faves] = await Promise.all([
+  const [kpis, goalsByTeam, topScorers, results, upcoming, faves, featured] = await Promise.all([
     getTournamentKpis(),
     getGoalsByTeam(10),
     getTopScorers(10),
     getResultsSplit(),
     getUpcomingMatches(5),
     favoriteTeamsWithNext(user.id),
+    getFeaturedMatch(),
   ]);
-
-  const firstMatch = upcoming[0] ?? null;
-  const firstMatchLabel = firstMatch
-    ? `${firstMatch.homeTeam.flagEmoji} ${firstMatch.homeTeam.shortName} vs ${firstMatch.awayTeam.shortName} ${firstMatch.awayTeam.flagEmoji}${firstMatch.venue ? ` · ${firstMatch.venue.name}` : ""}`
-    : null;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-6 py-8">
@@ -42,10 +39,30 @@ export default async function DashboardPage() {
         </h1>
       </header>
 
-      <KickoffCountdown
-        firstKickoffIso={firstMatch ? firstMatch.kickoffAt.toISOString() : null}
-        firstMatchLabel={firstMatchLabel}
-      />
+      {featured ? (
+        <FeaturedMatchBanner
+          matchId={featured.match.id}
+          role={featured.role}
+          matchNumber={featured.match.matchNumber}
+          groupCode={featured.match.groupCode}
+          kickoffIso={featured.match.kickoffAt.toISOString()}
+          status={featured.match.status}
+          homeTeam={{
+            id: featured.match.homeTeam.id,
+            shortName: featured.match.homeTeam.shortName,
+            flagEmoji: featured.match.homeTeam.flagEmoji,
+          }}
+          awayTeam={{
+            id: featured.match.awayTeam.id,
+            shortName: featured.match.awayTeam.shortName,
+            flagEmoji: featured.match.awayTeam.flagEmoji,
+          }}
+          homeScore={featured.match.homeScore}
+          awayScore={featured.match.awayScore}
+          venueName={featured.match.venue?.name ?? null}
+          venueCity={featured.match.venue?.city ?? null}
+        />
+      ) : null}
 
       {/* Row 1: KPI cards */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">

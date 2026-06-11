@@ -138,6 +138,57 @@ export async function getResultsSplit(): Promise<ResultsSplit> {
   return { wins, draws, losses: 0 };
 }
 
+/**
+ * The single match worth showing in the dashboard hero banner. Priority:
+ *   1. Any LIVE match (the broadcast is on right now)
+ *   2. The next SCHEDULED match if it kicks off within ~6 hours
+ *   3. The most recent FINISHED match (so the score lingers after FT)
+ *   4. null when the tournament is over or hasn't really started
+ */
+export async function getFeaturedMatch() {
+  const now = new Date();
+  const include = { homeTeam: true, awayTeam: true, venue: true } as const;
+
+  const live = await prisma.match.findFirst({
+    where: { status: "LIVE" },
+    include,
+    orderBy: { kickoffAt: "asc" },
+  });
+  if (live) return { match: live, role: "live" as const };
+
+  const sixHoursOut = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+  const imminent = await prisma.match.findFirst({
+    where: { status: "SCHEDULED", kickoffAt: { gte: now, lt: sixHoursOut } },
+    include,
+    orderBy: { kickoffAt: "asc" },
+  });
+  if (imminent) return { match: imminent, role: "imminent" as const };
+
+  const justFinished = await prisma.match.findFirst({
+    where: { status: "FINISHED" },
+    include,
+    orderBy: { kickoffAt: "desc" },
+  });
+  if (justFinished) {
+    const finishedAt = justFinished.kickoffAt.getTime();
+    const sixHoursAgo = now.getTime() - 6 * 60 * 60 * 1000;
+    if (finishedAt >= sixHoursAgo) {
+      return { match: justFinished, role: "just-finished" as const };
+    }
+  }
+
+  const nextScheduled = await prisma.match.findFirst({
+    where: { status: "SCHEDULED", kickoffAt: { gte: now } },
+    include,
+    orderBy: { kickoffAt: "asc" },
+  });
+  if (nextScheduled) return { match: nextScheduled, role: "upcoming" as const };
+
+  return null;
+}
+
+export type FeaturedMatch = NonNullable<Awaited<ReturnType<typeof getFeaturedMatch>>>;
+
 export async function getUpcomingMatches(limit = 5) {
   return prisma.match.findMany({
     where: { status: "SCHEDULED", kickoffAt: { gte: new Date() } },
