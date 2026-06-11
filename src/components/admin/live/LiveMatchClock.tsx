@@ -10,6 +10,11 @@ type ClockState = {
   addedMinutes1H: number | null;
 };
 
+// Schema-defined max for MatchEvent.addedMinute. The clock caps the
+// computed added time at this value so events stay savable even when an
+// admin forgets to mark Half time and the wall-clock has run for hours.
+const ADDED_MINUTE_CAP = 30;
+
 function compute(state: ClockState): { half: 1 | 2 | "HT" | "—"; minute: number; addedMinute: number | null } {
   if (state.status !== "LIVE" || !state.kickoffStartedAt) {
     return { half: "—", minute: 0, addedMinute: null };
@@ -20,7 +25,7 @@ function compute(state: ClockState): { half: 1 | 2 | "HT" | "—"; minute: numbe
     const elapsed = now - new Date(state.secondHalfStartedAt).getTime();
     const minutes = 45 + Math.floor(elapsed / 60000);
     return minutes > 90
-      ? { half: 2, minute: 90, addedMinute: minutes - 90 }
+      ? { half: 2, minute: 90, addedMinute: Math.min(minutes - 90, ADDED_MINUTE_CAP) }
       : { half: 2, minute: minutes, addedMinute: null };
   }
 
@@ -28,7 +33,7 @@ function compute(state: ClockState): { half: 1 | 2 | "HT" | "—"; minute: numbe
     const elapsed = now - new Date(state.kickoffStartedAt).getTime();
     const minutes = Math.floor(elapsed / 60000);
     return minutes > 45
-      ? { half: 1, minute: 45, addedMinute: minutes - 45 }
+      ? { half: 1, minute: 45, addedMinute: Math.min(minutes - 45, ADDED_MINUTE_CAP) }
       : { half: 1, minute: minutes, addedMinute: null };
   }
 
