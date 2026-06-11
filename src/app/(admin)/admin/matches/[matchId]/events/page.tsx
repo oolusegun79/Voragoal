@@ -8,7 +8,13 @@ import { FlagIcon } from "@/components/team/FlagIcon";
 import { EventForm } from "@/components/admin/EventForm";
 import { EditEventPanel } from "@/components/admin/EditEventPanel";
 import { formatKickoff } from "@/lib/formatters";
-import { deleteEventAction, recomputeScoreAction, setStatusAction } from "./actions";
+import {
+  deleteEventAction,
+  recomputeScoreAction,
+  setStatusAction,
+  setExternalApiIdAction,
+  syncFeedNowAction,
+} from "./actions";
 
 const STATUSES = ["SCHEDULED", "LIVE", "FINISHED", "POSTPONED", "CANCELLED"] as const;
 
@@ -104,6 +110,46 @@ export default async function AdminMatchEventsPage({
               </button>
             </form>
           </div>
+        </div>
+
+        {/* Feed import row */}
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/40 pt-3 text-xs text-muted-foreground">
+          <span className="font-medium tracking-wide uppercase">Feed</span>
+          <form action={setExternalApiIdAction} className="inline-flex items-center gap-2">
+            <input type="hidden" name="matchId" value={match.id} />
+            <input
+              type="text"
+              name="externalApiId"
+              defaultValue={match.externalApiId ?? ""}
+              placeholder="API-Football fixture ID"
+              className="h-8 w-52 rounded-md border border-border/80 bg-background px-2 text-xs"
+            />
+            <button
+              type="submit"
+              className="inline-flex h-8 items-center rounded-md bg-card-muted px-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Save ID
+            </button>
+          </form>
+          <form action={syncFeedNowAction}>
+            <input type="hidden" name="matchId" value={match.id} />
+            <button
+              type="submit"
+              disabled={!match.externalApiId}
+              className="inline-flex h-8 items-center rounded-md border border-primary/40 bg-primary/10 px-3 text-xs font-medium text-primary transition hover:bg-primary/15 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-card-muted disabled:text-muted-foreground"
+            >
+              Sync now
+            </button>
+          </form>
+          {match.externalApiId ? (
+            <span className="text-[10px] text-muted-foreground">
+              Auto-syncs every minute while LIVE.
+            </span>
+          ) : (
+            <span className="text-[10px] text-muted-foreground">
+              Paste an API-Football fixture ID to enable auto-import.
+            </span>
+          )}
         </div>
       </header>
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { CornerDownLeft, Trash2, Undo2 } from "lucide-react";
+import { CornerDownLeft, Rss, Trash2, Undo2 } from "lucide-react";
 import type { EventType, Player, Team, Match } from "@prisma/client";
 import { LiveMatchClock, getAddedMinute, getCurrentMinute } from "@/components/admin/live/LiveMatchClock";
 import { FlagIcon } from "@/components/team/FlagIcon";
@@ -18,6 +18,7 @@ type EventRow = {
   player: { knownAs: string | null; fullName: string } | null;
   relatedPlayer: { knownAs: string | null; fullName: string } | null;
   detail: string | null;
+  importedFromFeed?: boolean;
 };
 
 type Squad = { team: Team; players: Player[] };
@@ -274,6 +275,14 @@ export function LiveEntryPanel({
                   {e.relatedPlayer ? (
                     <span className="text-muted-foreground">
                       ({e.relatedPlayer.knownAs ?? e.relatedPlayer.fullName})
+                    </span>
+                  ) : null}
+                  {e.importedFromFeed ? (
+                    <span
+                      title="Imported from API-Football feed"
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-primary"
+                    >
+                      <Rss className="size-2.5" /> feed
                     </span>
                   ) : null}
                 </div>

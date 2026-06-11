@@ -24,6 +24,8 @@ export const eventInputSchema = z.object({
   playerId: z.string().optional().nullable(),
   relatedPlayerId: z.string().optional().nullable(),
   detail: z.string().max(200).optional().nullable(),
+  externalEventKey: z.string().max(200).optional().nullable(),
+  importedFromFeed: z.boolean().optional(),
 });
 export type EventInput = z.infer<typeof eventInputSchema>;
 
@@ -36,6 +38,8 @@ function normalize(input: EventInput): EventInput {
     playerId: input.playerId || null,
     relatedPlayerId: input.relatedPlayerId || null,
     detail: input.detail?.trim() || null,
+    externalEventKey: input.externalEventKey?.trim() || null,
+    importedFromFeed: input.importedFromFeed ?? false,
   };
 }
 

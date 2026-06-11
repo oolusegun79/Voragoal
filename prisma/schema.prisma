@@ -179,8 +179,10 @@ model Player {
   events        MatchEvent[]     @relation("primaryPlayer")
   relatedEvents MatchEvent[]     @relation("relatedPlayer")
   favoritedBy   FavoritePlayer[]
+  externalApiId String?
 
   @@index([teamId])
+  @@index([teamId, externalApiId])
 }
 
 model Venue {
@@ -218,6 +220,7 @@ model Match {
   events               MatchEvent[]
   stats                MatchStat[]
   savedBy              SavedMatch[]
+  externalApiId        String?
 
   @@index([kickoffAt])
   @@index([stage])
@@ -238,8 +241,11 @@ model MatchEvent {
   relatedPlayerId String?
   relatedPlayer   Player?    @relation("relatedPlayer", fields: [relatedPlayerId], references: [id])
   detail          String?
+  externalEventKey String?
+  importedFromFeed Boolean   @default(false)
 
   @@index([matchId, minute])
+  @@unique([matchId, externalEventKey])
 }
 
 model MatchStat {

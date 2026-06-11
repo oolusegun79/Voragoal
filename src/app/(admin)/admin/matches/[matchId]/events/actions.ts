@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { prisma } from "@/server/db";
 import { requireRole } from "@/server/auth/guards";
 import {
   createEvent,
@@ -10,6 +11,7 @@ import {
   setMatchStatus,
   eventInputSchema,
 } from "@/server/services/eventsService";
+import { syncMatchFromFeed } from "@/server/services/feedImportService";
 
 const STATUSES = ["SCHEDULED", "LIVE", "FINISHED", "POSTPONED", "CANCELLED"] as const;
 
@@ -91,5 +93,23 @@ export async function setStatusAction(formData: FormData) {
   const status = String(formData.get("status"));
   if (!(STATUSES as readonly string[]).includes(status)) return;
   await setMatchStatus(matchId, status as (typeof STATUSES)[number]);
+  bumpPaths(matchId);
+}
+
+export async function setExternalApiIdAction(formData: FormData) {
+  await requireRole("EDITOR");
+  const matchId = String(formData.get("matchId"));
+  const raw = String(formData.get("externalApiId") ?? "").trim();
+  await prisma.match.update({
+    where: { id: matchId },
+    data: { externalApiId: raw || null },
+  });
+  bumpPaths(matchId);
+}
+
+export async function syncFeedNowAction(formData: FormData) {
+  await requireRole("EDITOR");
+  const matchId = String(formData.get("matchId"));
+  await syncMatchFromFeed(matchId);
   bumpPaths(matchId);
 }
