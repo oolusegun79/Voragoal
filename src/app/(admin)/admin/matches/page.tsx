@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { listMatches } from "@/server/services/matchService";
-import { TeamCrest } from "@/components/team/TeamCrest";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { LocalDayList } from "@/components/matches/LocalDayList";
 import { LocalTime } from "@/components/LocalTime";
 
@@ -17,22 +17,36 @@ export default async function AdminMatchesPage() {
       row: (
         <Link
           href={`/admin/matches/${m.id}/events`}
-          className="grid grid-cols-[1fr_auto_1fr_auto_auto] items-center gap-4 border-b border-border/40 px-4 py-3 transition last:border-b-0 hover:bg-card-muted"
+          className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-border/40 px-4 py-3 transition last:border-b-0 hover:bg-card-muted"
         >
-          <div className="flex items-center justify-end gap-2">
-            <TeamCrest flagEmoji={m.homeTeam.flagEmoji} shortName={m.homeTeam.shortName} accentColor={m.homeTeam.accentColor} size="sm" />
-          </div>
-          <div className="min-w-[80px] text-center font-mono text-sm">
-            {finished ? (
-              `${m.homeScore} – ${m.awayScore}`
-            ) : live ? (
-              "LIVE"
-            ) : (
-              <LocalTime iso={m.kickoffAt.toISOString()} variant="time" />
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <TeamCrest flagEmoji={m.awayTeam.flagEmoji} shortName={m.awayTeam.shortName} accentColor={m.awayTeam.accentColor} size="sm" />
+          <div className="flex items-center justify-center gap-3">
+            <span
+              className="w-12 text-right text-xs font-medium tracking-tight"
+              style={m.homeTeam.accentColor ? { color: m.homeTeam.accentColor } : undefined}
+            >
+              {m.homeTeam.shortName}
+            </span>
+            <span className="text-base" aria-hidden>
+              <FlagIcon emoji={m.homeTeam.flagEmoji} />
+            </span>
+            <span className="w-20 text-center font-mono text-sm">
+              {finished ? (
+                `${m.homeScore} – ${m.awayScore}`
+              ) : live ? (
+                "LIVE"
+              ) : (
+                <LocalTime iso={m.kickoffAt.toISOString()} variant="time" />
+              )}
+            </span>
+            <span className="text-base" aria-hidden>
+              <FlagIcon emoji={m.awayTeam.flagEmoji} />
+            </span>
+            <span
+              className="w-12 text-left text-xs font-medium tracking-tight"
+              style={m.awayTeam.accentColor ? { color: m.awayTeam.accentColor } : undefined}
+            >
+              {m.awayTeam.shortName}
+            </span>
           </div>
           <span className={`rounded-full px-2 py-0.5 text-xs ${
             live ? "bg-error/20 text-error"

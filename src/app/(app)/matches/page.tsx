@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { listMatches, type MatchFilters } from "@/server/services/matchService";
 import { listTeams } from "@/server/services/teamService";
-import { TeamCrest } from "@/components/team/TeamCrest";
+import { FlagIcon } from "@/components/team/FlagIcon";
 import { LocalDayList } from "@/components/matches/LocalDayList";
 import { LocalTime } from "@/components/LocalTime";
 import type { MatchStage, MatchStatus } from "@prisma/client";
@@ -44,39 +44,46 @@ export default async function MatchesPage({
       row: (
         <Link
           href={`/matches/${m.id}`}
-          className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3 border-b border-border/40 px-4 py-3 transition last:border-b-0 hover:bg-card-muted sm:gap-6"
+          className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-border/40 px-4 py-3 transition last:border-b-0 hover:bg-card-muted sm:gap-6"
         >
-          <div className="flex items-center justify-end gap-2">
-            <TeamCrest
-              flagEmoji={m.homeTeam.flagEmoji}
-              shortName={m.homeTeam.shortName}
-              accentColor={m.homeTeam.accentColor}
-              size="md"
-            />
-          </div>
-          <div className="min-w-[80px] text-center">
-            {finished ? (
-              <span className="font-mono text-base font-semibold tabular-nums">
-                {m.homeScore} – {m.awayScore}
-              </span>
-            ) : live ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-error/20 px-2 py-0.5 text-xs font-medium text-error">
-                <span className="size-1.5 animate-pulse rounded-full bg-error" />
-                LIVE
-              </span>
-            ) : (
-              <span className="font-mono text-sm text-muted-foreground">
-                <LocalTime iso={m.kickoffAt.toISOString()} variant="time" />
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <TeamCrest
-              flagEmoji={m.awayTeam.flagEmoji}
-              shortName={m.awayTeam.shortName}
-              accentColor={m.awayTeam.accentColor}
-              size="md"
-            />
+          {/* Symmetric matchup: name | flag | score/time | flag | name.
+              Fixed-width name columns make rows line up regardless of how
+              wide a given flag emoji renders. */}
+          <div className="flex items-center justify-center gap-3 sm:gap-4">
+            <span
+              className="w-12 text-right text-sm font-medium tracking-tight"
+              style={m.homeTeam.accentColor ? { color: m.homeTeam.accentColor } : undefined}
+            >
+              {m.homeTeam.shortName}
+            </span>
+            <span className="text-lg" aria-hidden>
+              <FlagIcon emoji={m.homeTeam.flagEmoji} />
+            </span>
+            <span className="w-20 text-center">
+              {finished ? (
+                <span className="font-mono text-base font-semibold tabular-nums">
+                  {m.homeScore} – {m.awayScore}
+                </span>
+              ) : live ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-error/20 px-2 py-0.5 text-xs font-medium text-error">
+                  <span className="size-1.5 animate-pulse rounded-full bg-error" />
+                  LIVE
+                </span>
+              ) : (
+                <span className="font-mono text-sm text-muted-foreground">
+                  <LocalTime iso={m.kickoffAt.toISOString()} variant="time" />
+                </span>
+              )}
+            </span>
+            <span className="text-lg" aria-hidden>
+              <FlagIcon emoji={m.awayTeam.flagEmoji} />
+            </span>
+            <span
+              className="w-12 text-left text-sm font-medium tracking-tight"
+              style={m.awayTeam.accentColor ? { color: m.awayTeam.accentColor } : undefined}
+            >
+              {m.awayTeam.shortName}
+            </span>
           </div>
           <div className="hidden items-center gap-3 text-xs text-muted-foreground sm:flex">
             <span>
