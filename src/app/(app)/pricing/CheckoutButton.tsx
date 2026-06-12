@@ -42,14 +42,19 @@ export function CheckoutButton({
           setError(data.error?.message ?? "Checkout failed. Try again.");
           return;
         }
-        // Funnel-top signal for TikTok ad optimization. Fired before redirect
-        // so it definitely reaches the pixel before the browser navigates away.
+        // Funnel-top signal for TikTok ad optimization.
         trackTikTok("InitiateCheckout", {
           value: 4.99,
           currency: "USD",
           content_id: "tournament_pass",
           content_type: "product",
         });
+        // The pixel beacon dispatches asynchronously. Without this short
+        // delay the browser sometimes navigates to Stripe before the
+        // request reaches analytics.tiktok.com, and TikTok never records
+        // the event. 250ms is below the human-perceptible threshold and
+        // enough time for the beacon to flush.
+        await new Promise((r) => setTimeout(r, 250));
         window.location.href = data.url;
       } catch {
         setError("Network error. Try again.");
