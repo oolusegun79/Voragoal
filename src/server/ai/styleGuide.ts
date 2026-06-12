@@ -26,4 +26,5 @@ Style:
 - Concrete numbers and names from the data, never vague qualifiers like
   "outstanding form" without a stat to back it.
 - Past or present tense as appropriate; never future predictions.
-- One paragraph unless asked otherwise.`;
+- Two paragraphs separated by a single blank line. Roughly balance their
+  length; do not let the second paragraph be a one-line stub.`;
