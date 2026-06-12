@@ -239,15 +239,21 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
         : null;
 
     // Structural fallback: same event re-imported under an older key format,
-    // or with a player name that shifted between polls. Within one match,
-    // (minute, type, team, player) uniquely identifies a real event.
+    // a shifted player name, or a one-minute API correction. For "one-shot"
+    // events (subs, cards) a player can only have one per match, so we ignore
+    // minute entirely. For goals and VAR we keep minute but tolerate ±1
+    // minute drift between API polls.
+    const ONE_SHOT: EventType[] = ["SUB_IN", "SUB_OUT", "YELLOW_CARD", "RED_CARD"];
+    const isOneShot = ONE_SHOT.includes(mappedType);
     const structural = await prisma.matchEvent.findFirst({
       where: {
         matchId: match.id,
-        minute: ev.time.elapsed,
         type: mappedType,
         teamId: internalTeamId,
         playerId: playerId,
+        ...(isOneShot
+          ? {}
+          : { minute: { gte: ev.time.elapsed - 1, lte: ev.time.elapsed + 1 } }),
       },
       select: { id: true },
     });
