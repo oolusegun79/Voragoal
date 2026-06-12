@@ -115,18 +115,48 @@ export async function setMatchStatus(
 
 // ---- Live transitions ----
 
-export async function startMatch(matchId: string) {
+export async function startMatch(matchId: string, startedAt: Date = new Date()) {
   return prisma.match.update({
     where: { id: matchId },
     data: {
       status: "LIVE",
-      kickoffStartedAt: new Date(),
+      kickoffStartedAt: startedAt,
       // reset 2H markers in case of replay
       secondHalfStartedAt: null,
       addedMinutes1H: null,
       addedMinutes2H: null,
     },
   });
+}
+
+/**
+ * Auto-flip any SCHEDULED match whose kickoffAt is in the last 15 minutes.
+ * The clock anchor is set to the *scheduled* kickoffAt (not now) so the
+ * minute display is accurate even when the cron fires a tick or two late.
+ * Idempotent: once flipped, status is LIVE and the filter excludes it.
+ */
+export async function autoStartScheduledMatches() {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - 15 * 60 * 1000);
+
+  const candidates = await prisma.match.findMany({
+    where: {
+      status: "SCHEDULED",
+      kickoffAt: { lte: now, gte: windowStart },
+    },
+    select: { id: true, kickoffAt: true },
+  });
+
+  const started: string[] = [];
+  for (const m of candidates) {
+    try {
+      await startMatch(m.id, m.kickoffAt);
+      started.push(m.id);
+    } catch {
+      // Next cron tick will retry; window stays open for 15 minutes.
+    }
+  }
+  return { scanned: candidates.length, started };
 }
 
 export async function recordHalfTime(matchId: string, addedMinutes1H?: number) {
