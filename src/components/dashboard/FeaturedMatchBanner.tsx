@@ -42,24 +42,32 @@ function liveMinute(
   secondHalfStartedAtIso: string | null,
   addedMinutes1H: number | null,
   nowMs: number,
-): { minute: number; addedMinute: number | null } | null {
+): { minute: number; seconds: number; addedMinute: number | null } | null {
   if (status !== "LIVE" || !kickoffStartedAtIso) return null;
   if (secondHalfStartedAtIso) {
-    const elapsed = nowMs - new Date(secondHalfStartedAtIso).getTime();
-    const minutes = 45 + Math.floor(elapsed / 60000);
-    return minutes > 90
-      ? { minute: 90, addedMinute: Math.min(minutes - 90, ADDED_MINUTE_CAP) }
-      : { minute: Math.max(minutes, 45), addedMinute: null };
+    const elapsed = Math.max(0, nowMs - new Date(secondHalfStartedAtIso).getTime());
+    const totalSec = Math.floor(elapsed / 1000);
+    const minutes = 45 + Math.floor(totalSec / 60);
+    if (minutes > 90) {
+      return { minute: 90, seconds: 0, addedMinute: Math.min(minutes - 90, ADDED_MINUTE_CAP) };
+    }
+    return { minute: minutes, seconds: totalSec % 60, addedMinute: null };
   }
   if (addedMinutes1H == null) {
-    const elapsed = nowMs - new Date(kickoffStartedAtIso).getTime();
-    const minutes = Math.floor(elapsed / 60000);
-    return minutes > 45
-      ? { minute: 45, addedMinute: Math.min(minutes - 45, ADDED_MINUTE_CAP) }
-      : { minute: minutes, addedMinute: null };
+    const elapsed = Math.max(0, nowMs - new Date(kickoffStartedAtIso).getTime());
+    const totalSec = Math.floor(elapsed / 1000);
+    const minutes = Math.floor(totalSec / 60);
+    if (minutes > 45) {
+      return { minute: 45, seconds: 0, addedMinute: Math.min(minutes - 45, ADDED_MINUTE_CAP) };
+    }
+    return { minute: minutes, seconds: totalSec % 60, addedMinute: null };
   }
   // HT — the "Half time" pill already conveys the state.
   return null;
+}
+
+function pad2(n: number): string {
+  return n.toString().padStart(2, "0");
 }
 
 function formatRemaining(targetMs: number, nowMs: number): string {
@@ -143,8 +151,10 @@ export function FeaturedMatchBanner(props: FeaturedMatchBannerProps) {
           <span>LIVE</span>
           {mounted && minuteInfo ? (
             <span className="font-mono tabular-nums">
-              {minuteInfo.minute}
-              {minuteInfo.addedMinute ? `+${minuteInfo.addedMinute}` : ""}&apos;
+              {minuteInfo.addedMinute
+                ? `${minuteInfo.minute}+${minuteInfo.addedMinute}`
+                : `${minuteInfo.minute}:${pad2(minuteInfo.seconds)}`}
+              &apos;
             </span>
           ) : null}
         </span>
