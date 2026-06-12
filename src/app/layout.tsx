@@ -4,6 +4,7 @@ import "flag-icons/css/flag-icons.min.css";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { CookieNotice } from "@/components/legal/CookieNotice";
+import { TikTokPixel } from "@/components/analytics/TikTokPixel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,6 +60,7 @@ export default function RootLayout({
         </div>
         <CookieNotice />
         <Analytics />
+        <TikTokPixel />
       </body>
     </html>
   );
