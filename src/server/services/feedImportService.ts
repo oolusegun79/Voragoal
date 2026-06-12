@@ -147,10 +147,15 @@ function eventKey(
   mappedType: EventType,
   internalTeamId: string,
 ): string {
+  // Use stable identifiers only. player.id is constant across polls, whereas
+  // player.name can shift between short ("C. Soucek") and full ("Tomáš Souček")
+  // form as API-Football refines the record. time.extra also flips from null
+  // to a number as injury time gets finalised, so we exclude it too — within
+  // a single match-minute, a player can't be the actor of two events of the
+  // same type for the same team.
   const minute = apiEvent.time.elapsed;
-  const extra = apiEvent.time.extra ?? 0;
-  const player = (apiEvent.player?.name ?? "").trim();
-  return [externalMatchId, minute, extra, mappedType, internalTeamId, player].join("|");
+  const playerId = apiEvent.player?.id ?? "x";
+  return [externalMatchId, minute, mappedType, internalTeamId, playerId].join("|");
 }
 
 export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
@@ -215,13 +220,14 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
 
     const key = eventKey(match.externalApiId, ev, mappedType, internalTeamId);
 
-    const existing = await prisma.matchEvent.findUnique({
+    // Fast path: previously-imported event with the current key format.
+    const byKey = await prisma.matchEvent.findUnique({
       where: {
         matchId_externalEventKey: { matchId: match.id, externalEventKey: key },
       },
       select: { id: true },
     });
-    if (existing) {
+    if (byKey) {
       summary.skipped += 1;
       continue;
     }
@@ -231,6 +237,24 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
       mappedType === "SUB_IN"
         ? await resolvePlayer(internalTeamId, ev.assist.id, ev.assist.name)
         : null;
+
+    // Structural fallback: same event re-imported under an older key format,
+    // or with a player name that shifted between polls. Within one match,
+    // (minute, type, team, player) uniquely identifies a real event.
+    const structural = await prisma.matchEvent.findFirst({
+      where: {
+        matchId: match.id,
+        minute: ev.time.elapsed,
+        type: mappedType,
+        teamId: internalTeamId,
+        playerId: playerId,
+      },
+      select: { id: true },
+    });
+    if (structural) {
+      summary.skipped += 1;
+      continue;
+    }
 
     const detailParts: string[] = [];
     if (!playerId && ev.player.name) detailParts.push(`API player: ${ev.player.name}`);
