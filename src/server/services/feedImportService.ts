@@ -263,6 +263,10 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
     }
 
     const detailParts: string[] = [];
+    // VAR's whole purpose is in the detail string ("Goal cancelled",
+    // "Penalty awarded", etc.). For other types the EventType already
+    // encodes what the detail field would say, so we skip it.
+    if (mappedType === "VAR" && ev.detail) detailParts.push(ev.detail);
     if (!playerId && ev.player.name) detailParts.push(`API player: ${ev.player.name}`);
     if (mappedType === "SUB_IN" && !relatedPlayerId && ev.assist.name) {
       detailParts.push(`API off: ${ev.assist.name}`);
