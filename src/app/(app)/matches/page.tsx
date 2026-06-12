@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { listMatches, type MatchFilters } from "@/server/services/matchService";
 import { listTeams } from "@/server/services/teamService";
 import { TeamCrest } from "@/components/team/TeamCrest";
-import { groupByDay } from "@/lib/formatters";
+import { LocalDayList } from "@/components/matches/LocalDayList";
 import { LocalTime } from "@/components/LocalTime";
 import type { MatchStage, MatchStatus } from "@prisma/client";
 
@@ -34,7 +34,63 @@ export default async function MatchesPage({
   const sp = await searchParams;
   const filters = parseFilters(sp);
   const [matches, teams] = await Promise.all([listMatches(filters), listTeams()]);
-  const groups = groupByDay(matches);
+
+  const dayItems = matches.map((m) => {
+    const finished = m.status === "FINISHED";
+    const live = m.status === "LIVE";
+    return {
+      id: m.id,
+      iso: m.kickoffAt.toISOString(),
+      row: (
+        <Link
+          href={`/matches/${m.id}`}
+          className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3 border-b border-border/40 px-4 py-3 transition last:border-b-0 hover:bg-card-muted sm:gap-6"
+        >
+          <div className="flex items-center justify-end gap-2">
+            <TeamCrest
+              flagEmoji={m.homeTeam.flagEmoji}
+              shortName={m.homeTeam.shortName}
+              accentColor={m.homeTeam.accentColor}
+              size="md"
+            />
+          </div>
+          <div className="min-w-[80px] text-center">
+            {finished ? (
+              <span className="font-mono text-base font-semibold tabular-nums">
+                {m.homeScore} – {m.awayScore}
+              </span>
+            ) : live ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-error/20 px-2 py-0.5 text-xs font-medium text-error">
+                <span className="size-1.5 animate-pulse rounded-full bg-error" />
+                LIVE
+              </span>
+            ) : (
+              <span className="font-mono text-sm text-muted-foreground">
+                <LocalTime iso={m.kickoffAt.toISOString()} variant="time" />
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <TeamCrest
+              flagEmoji={m.awayTeam.flagEmoji}
+              shortName={m.awayTeam.shortName}
+              accentColor={m.awayTeam.accentColor}
+              size="md"
+            />
+          </div>
+          <div className="hidden items-center gap-3 text-xs text-muted-foreground sm:flex">
+            <span>
+              {m.stage === "GROUP" && m.groupCode
+                ? `Group ${m.groupCode}`
+                : m.stage.replaceAll("_", " ")}
+            </span>
+            {m.venue ? <span>· {m.venue.name}</span> : null}
+            <ChevronRight className="size-4" />
+          </div>
+        </Link>
+      ),
+    };
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
@@ -84,75 +140,15 @@ export default async function MatchesPage({
       </form>
 
       {/* Results */}
-      <div className="mt-8 space-y-8">
-        {groups.length === 0 ? (
-          <p className="rounded-lg border border-border/60 bg-card/60 p-8 text-center text-sm text-muted-foreground">
-            No matches found with these filters.
-          </p>
-        ) : (
-          groups.map((g) => (
-            <section key={g.key}>
-              <h2 className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">
-                {g.day}
-              </h2>
-              <div className="overflow-hidden rounded-lg border border-border/60 bg-card">
-                {g.items.map((m) => {
-                  const finished = m.status === "FINISHED";
-                  const live = m.status === "LIVE";
-                  return (
-                    <Link
-                      key={m.id}
-                      href={`/matches/${m.id}`}
-                      className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3 border-b border-border/40 px-4 py-3 transition last:border-b-0 hover:bg-card-muted sm:gap-6"
-                    >
-                      <div className="flex items-center justify-end gap-2">
-                        <TeamCrest
-                          flagEmoji={m.homeTeam.flagEmoji}
-                          shortName={m.homeTeam.shortName}
-                          accentColor={m.homeTeam.accentColor}
-                          size="md"
-                        />
-                      </div>
-                      <div className="min-w-[80px] text-center">
-                        {finished ? (
-                          <span className="font-mono text-base font-semibold tabular-nums">
-                            {m.homeScore} – {m.awayScore}
-                          </span>
-                        ) : live ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-error/20 px-2 py-0.5 text-xs font-medium text-error">
-                            <span className="size-1.5 animate-pulse rounded-full bg-error" />
-                            LIVE
-                          </span>
-                        ) : (
-                          <span className="font-mono text-sm text-muted-foreground">
-                            <LocalTime iso={m.kickoffAt.toISOString()} variant="time" />
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TeamCrest
-                          flagEmoji={m.awayTeam.flagEmoji}
-                          shortName={m.awayTeam.shortName}
-                          accentColor={m.awayTeam.accentColor}
-                          size="md"
-                        />
-                      </div>
-                      <div className="hidden items-center gap-3 text-xs text-muted-foreground sm:flex">
-                        <span>
-                          {m.stage === "GROUP" && m.groupCode
-                            ? `Group ${m.groupCode}`
-                            : m.stage.replaceAll("_", " ")}
-                        </span>
-                        {m.venue ? <span>· {m.venue.name}</span> : null}
-                        <ChevronRight className="size-4" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          ))
-        )}
+      <div className="mt-8">
+        <LocalDayList
+          items={dayItems}
+          empty={
+            <p className="rounded-lg border border-border/60 bg-card/60 p-8 text-center text-sm text-muted-foreground">
+              No matches found with these filters.
+            </p>
+          }
+        />
       </div>
     </div>
   );
