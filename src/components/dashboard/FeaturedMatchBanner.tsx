@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Info } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { FlagIcon } from "@/components/team/FlagIcon";
 import { LocalTime } from "@/components/LocalTime";
+
+// Schema cap for MatchEvent.addedMinute. Mirrors LiveMatchClock so we never
+// display a runaway clock if the admin forgets to mark Half time.
+const ADDED_MINUTE_CAP = 30;
 
 type Role = "live" | "imminent" | "just-finished" | "upcoming";
 
@@ -31,6 +35,32 @@ export type FeaturedMatchBannerProps = {
   venueName: string | null;
   venueCity: string | null;
 };
+
+function liveMinute(
+  status: string,
+  kickoffStartedAtIso: string | null,
+  secondHalfStartedAtIso: string | null,
+  addedMinutes1H: number | null,
+  nowMs: number,
+): { minute: number; addedMinute: number | null } | null {
+  if (status !== "LIVE" || !kickoffStartedAtIso) return null;
+  if (secondHalfStartedAtIso) {
+    const elapsed = nowMs - new Date(secondHalfStartedAtIso).getTime();
+    const minutes = 45 + Math.floor(elapsed / 60000);
+    return minutes > 90
+      ? { minute: 90, addedMinute: Math.min(minutes - 90, ADDED_MINUTE_CAP) }
+      : { minute: Math.max(minutes, 45), addedMinute: null };
+  }
+  if (addedMinutes1H == null) {
+    const elapsed = nowMs - new Date(kickoffStartedAtIso).getTime();
+    const minutes = Math.floor(elapsed / 60000);
+    return minutes > 45
+      ? { minute: 45, addedMinute: Math.min(minutes - 45, ADDED_MINUTE_CAP) }
+      : { minute: minutes, addedMinute: null };
+  }
+  // HT — the "Half time" pill already conveys the state.
+  return null;
+}
 
 function formatRemaining(targetMs: number, nowMs: number): string {
   const total = targetMs - nowMs;
@@ -72,13 +102,31 @@ export function FeaturedMatchBanner(props: FeaturedMatchBannerProps) {
 
   const [mounted, setMounted] = useState(false);
   const [nowMs, setNowMs] = useState<number>(Date.now());
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-    if (role !== "imminent" && role !== "upcoming") return;
+    const needsTick = role === "imminent" || role === "upcoming" || status === "LIVE";
+    if (!needsTick) return;
     const id = setInterval(() => setNowMs(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [role]);
+  }, [role, status]);
+
+  // While LIVE, pull fresh server data (status flip to FINISHED, new score,
+  // new clock anchors) every 15s. Mirrors LiveScorePoller on the match page.
+  useEffect(() => {
+    if (status !== "LIVE") return;
+    const id = setInterval(() => router.refresh(), 15000);
+    return () => clearInterval(id);
+  }, [status, router]);
+
+  const minuteInfo = liveMinute(
+    status,
+    kickoffStartedAtIso,
+    secondHalfStartedAtIso,
+    addedMinutes1H,
+    nowMs,
+  );
 
   const statusPill = (() => {
     if (status === "LIVE") {
@@ -92,7 +140,13 @@ export function FeaturedMatchBanner(props: FeaturedMatchBannerProps) {
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-error/15 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-error">
           <span className="size-1.5 animate-pulse rounded-full bg-error" />
-          LIVE
+          <span>LIVE</span>
+          {mounted && minuteInfo ? (
+            <span className="font-mono tabular-nums">
+              {minuteInfo.minute}
+              {minuteInfo.addedMinute ? `+${minuteInfo.addedMinute}` : ""}&apos;
+            </span>
+          ) : null}
         </span>
       );
     }
@@ -177,15 +231,6 @@ export function FeaturedMatchBanner(props: FeaturedMatchBannerProps) {
           ) : null}
         </div>
 
-        {role === "imminent" || role === "upcoming" ? (
-          <p className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
-            <Info className="mt-0.5 size-3 shrink-0" aria-hidden />
-            <span>
-              Pre-tournament view — this is sample data. Real match events fill in once kick-off
-              happens.
-            </span>
-          </p>
-        ) : null}
       </div>
     </Link>
   );
