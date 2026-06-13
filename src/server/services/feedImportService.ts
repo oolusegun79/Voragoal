@@ -238,6 +238,33 @@ function hasAnyValue(s: MappedStats): boolean {
   return Object.values(s).some((v) => v != null);
 }
 
+export async function backfillStatsForMatch(
+  matchId: string,
+): Promise<{ updated: number; error?: string }> {
+  if (!isApiFeedConfigured()) return { updated: 0, error: "API_FOOTBALL_KEY not configured" };
+
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: { id: true, externalApiId: true, homeTeamId: true, awayTeamId: true },
+  });
+  if (!match) return { updated: 0, error: "match not found" };
+  if (!match.externalApiId) return { updated: 0, error: "no externalApiId" };
+
+  // We need the API team ids — they come from the fixture endpoint.
+  // One extra call but only happens on manual backfill, not the hot loop.
+  const fixture = await fetchFixture(match.externalApiId);
+  if (!fixture) return { updated: 0, error: "no fixture from API" };
+
+  return syncStatsForMatch(
+    match.id,
+    match.externalApiId,
+    fixture.teams.home.id,
+    fixture.teams.away.id,
+    match.homeTeamId,
+    match.awayTeamId,
+  );
+}
+
 async function syncStatsForMatch(
   matchId: string,
   externalApiId: string,
