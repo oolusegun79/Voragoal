@@ -5,6 +5,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { CookieNotice } from "@/components/legal/CookieNotice";
 import { TikTokPixel } from "@/components/analytics/TikTokPixel";
+import { GoogleAdsTag } from "@/components/analytics/GoogleAdsTag";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,7 @@ export default function RootLayout({
         <CookieNotice />
         <Analytics />
         <TikTokPixel />
+        <GoogleAdsTag />
       </body>
     </html>
   );

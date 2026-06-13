@@ -5,6 +5,7 @@ import { getStripe, isStripeConfigured } from "@/server/stripe";
 import { fulfillPurchase } from "@/server/services/purchaseService";
 import { userHasPass } from "@/server/auth/access";
 import { CompletePaymentTracker } from "@/components/analytics/CompletePaymentTracker";
+import { PurchaseConversionTracker } from "@/components/analytics/PurchaseConversionTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,10 @@ export default async function CheckoutSuccessPage({
   return (
     <div className="mx-auto max-w-xl px-6 py-16 text-center">
       {hasPass && session_id ? (
-        <CompletePaymentTracker sessionId={session_id} value={4.99} />
+        <>
+          <CompletePaymentTracker sessionId={session_id} value={4.99} />
+          <PurchaseConversionTracker sessionId={session_id} />
+        </>
       ) : null}
       <CircleCheck className="mx-auto size-12 text-success" />
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">You're in</h1>
