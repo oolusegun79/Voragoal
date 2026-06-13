@@ -498,16 +498,22 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
     }
   }
 
-  const stats = await syncStatsForMatch(
-    matchIdLocal,
-    match.externalApiId,
-    apiHomeId,
-    apiAwayId,
-    homeTeamId,
-    awayTeamId,
-  );
-  summary.statsUpdated = stats.updated;
-  if (stats.error) summary.errors.push(stats.error);
+  // Cost guard: stats don't move minute-to-minute the way events do.
+  // Only fetch every 5 minutes (and on the first poll where statsUpdated=0
+  // gets a value of 0 anyway). Saves ~80% of /fixtures/statistics calls.
+  const minuteOfHour = new Date().getUTCMinutes();
+  if (minuteOfHour % 5 === 0) {
+    const stats = await syncStatsForMatch(
+      matchIdLocal,
+      match.externalApiId,
+      apiHomeId,
+      apiAwayId,
+      homeTeamId,
+      awayTeamId,
+    );
+    summary.statsUpdated = stats.updated;
+    if (stats.error) summary.errors.push(stats.error);
+  }
 
   return summary;
 }
@@ -549,10 +555,18 @@ export async function autoTransitionMatches(): Promise<AutoTransitionSummary> {
     return summary;
   }
 
+  // Cost guard: API-Football Pro is 7500 req/day. Polling every SCHEDULED
+  // fixture every minute (~69 matches × 1440 = ~100k) blows past that in
+  // hours. Only poll matches that are near kickoff: 6h before → already LIVE.
+  const now = new Date();
+  const sixHoursOut = new Date(now.getTime() + 6 * 60 * 60 * 1000);
   const matches = await prisma.match.findMany({
     where: {
       externalApiId: { not: null },
-      status: { in: ["SCHEDULED", "LIVE"] },
+      OR: [
+        { status: "LIVE" },
+        { status: "SCHEDULED", kickoffAt: { lte: sixHoursOut } },
+      ],
     },
     select: {
       id: true,
