@@ -143,6 +143,9 @@ export async function autoStartScheduledMatches() {
     where: {
       status: "SCHEDULED",
       kickoffAt: { lte: now, gte: windowStart },
+      // Matches with feeds are state-managed by autoTransitionMatches() in
+      // feedImportService, which aligns the clock to API.elapsed for accuracy.
+      externalApiId: null,
     },
     select: { id: true, kickoffAt: true },
   });

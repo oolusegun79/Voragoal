@@ -1,6 +1,12 @@
 import type { EventType } from "@prisma/client";
 import { prisma } from "@/server/db";
-import { createEvent } from "@/server/services/eventsService";
+import {
+  createEvent,
+  fullTime,
+  recordHalfTime,
+  setMatchStatus,
+  startMatch,
+} from "@/server/services/eventsService";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
@@ -17,7 +23,14 @@ type ApiEvent = {
 };
 
 type ApiFixture = {
-  fixture: { id: number };
+  fixture: {
+    id: number;
+    status: {
+      short: string; // NS | 1H | HT | 2H | ET | BT | P | FT | AET | PEN | SUSP | INT | PST | CANC | ABD | AWD | WO | TBD
+      elapsed: number | null;
+      extra: number | null;
+    };
+  };
   teams: {
     home: { id: number; name: string };
     away: { id: number; name: string };
@@ -289,6 +302,127 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
       summary.inserted += 1;
     } catch (err) {
       summary.errors.push(`insert failed (${mappedType} @ ${ev.time.elapsed}'): ${(err as Error).message}`);
+    }
+  }
+
+  return summary;
+}
+
+export type TransitionEvent =
+  | "kickoff"
+  | "halftime"
+  | "resume-2h"
+  | "fulltime"
+  | "postponed"
+  | "cancelled";
+
+export type AutoTransitionSummary = {
+  scanned: number;
+  transitions: Array<{ matchId: string; event: TransitionEvent }>;
+  errors: string[];
+};
+
+/**
+ * Drive Match state transitions from API-Football's live fixture state.
+ *
+ *   API status → DB action (idempotent, no-op if already applied)
+ *   ----------------------------------------------------------------
+ *   1H, HT, 2H, ET, BT, P     and status=SCHEDULED   → startMatch(kickoffStartedAt aligned to API.elapsed)
+ *   HT                        and addedMinutes1H=null → recordHalfTime(addedMinutes1H=API.extra)
+ *   2H, ET                    and secondHalfStartedAt=null → set secondHalfStartedAt aligned to API.elapsed
+ *   FT, AET, PEN              and status=LIVE        → fullTime(addedMinutes2H=API.extra)
+ *   PST, SUSP, INT            and status≠POSTPONED   → setMatchStatus(POSTPONED)
+ *   CANC, ABD                 and status≠CANCELLED   → setMatchStatus(CANCELLED)
+ *
+ * Only runs for matches that have externalApiId set. Matches without a
+ * fixture binding are handled by autoStartScheduledMatches (kickoff only).
+ */
+export async function autoTransitionMatches(): Promise<AutoTransitionSummary> {
+  const summary: AutoTransitionSummary = { scanned: 0, transitions: [], errors: [] };
+
+  if (!isApiFeedConfigured()) {
+    summary.errors.push("API_FOOTBALL_KEY not configured");
+    return summary;
+  }
+
+  const matches = await prisma.match.findMany({
+    where: {
+      externalApiId: { not: null },
+      status: { in: ["SCHEDULED", "LIVE"] },
+    },
+    select: {
+      id: true,
+      externalApiId: true,
+      status: true,
+      kickoffStartedAt: true,
+      secondHalfStartedAt: true,
+      addedMinutes1H: true,
+    },
+  });
+  summary.scanned = matches.length;
+
+  for (const m of matches) {
+    if (!m.externalApiId) continue;
+    try {
+      const fixture = await fetchFixture(m.externalApiId);
+      if (!fixture) continue;
+      const apiStatus = fixture.fixture.status.short;
+      const apiElapsed = fixture.fixture.status.elapsed;
+      const apiExtra = fixture.fixture.status.extra;
+
+      const IN_PLAY = new Set(["1H", "HT", "2H", "ET", "BT", "P"]);
+      const FINAL = new Set(["FT", "AET", "PEN", "AWD", "WO"]);
+      const POSTPONED_LIKE = new Set(["PST", "SUSP", "INT"]);
+      const CANCELLED_LIKE = new Set(["CANC", "ABD"]);
+
+      // 1) SCHEDULED → LIVE (kickoff). Align kickoffStartedAt so our clock
+      //    matches API.elapsed exactly, even if cron is late or broadcast delayed.
+      if (m.status === "SCHEDULED" && IN_PLAY.has(apiStatus)) {
+        const elapsedMin = apiElapsed ?? 0;
+        const startedAt = new Date(Date.now() - elapsedMin * 60 * 1000);
+        await startMatch(m.id, startedAt);
+        summary.transitions.push({ matchId: m.id, event: "kickoff" });
+      }
+
+      // 2) HT — record added time so the clock pauses at 45'+X
+      if (m.status === "LIVE" && apiStatus === "HT" && m.addedMinutes1H == null) {
+        await recordHalfTime(m.id, apiExtra ?? 0);
+        summary.transitions.push({ matchId: m.id, event: "halftime" });
+      }
+
+      // 3) Resume 2H — set secondHalfStartedAt back-calculated from API.elapsed
+      if (m.status === "LIVE" && (apiStatus === "2H" || apiStatus === "ET") && !m.secondHalfStartedAt) {
+        if (m.addedMinutes1H == null) {
+          // Defensive: HT marker might be missing if API jumped 1H→2H between polls.
+          await recordHalfTime(m.id, 0);
+        }
+        const elapsed = apiElapsed ?? 45;
+        const sinceHalfStartMin = Math.max(0, elapsed - 45);
+        const secondHalfStartedAt = new Date(Date.now() - sinceHalfStartMin * 60 * 1000);
+        await prisma.match.update({
+          where: { id: m.id },
+          data: { secondHalfStartedAt },
+        });
+        summary.transitions.push({ matchId: m.id, event: "resume-2h" });
+      }
+
+      // 4) Full time
+      if (m.status === "LIVE" && FINAL.has(apiStatus)) {
+        await fullTime(m.id, apiExtra ?? 0);
+        summary.transitions.push({ matchId: m.id, event: "fulltime" });
+      }
+
+      // 5) Postponed / cancelled
+      if (m.status !== "POSTPONED" && POSTPONED_LIKE.has(apiStatus)) {
+        await setMatchStatus(m.id, "POSTPONED");
+        summary.transitions.push({ matchId: m.id, event: "postponed" });
+      }
+      if (m.status !== "CANCELLED" && CANCELLED_LIKE.has(apiStatus)) {
+        await setMatchStatus(m.id, "CANCELLED");
+        summary.transitions.push({ matchId: m.id, event: "cancelled" });
+      }
+    } catch (err) {
+      summary.errors.push(`${m.id}: ${(err as Error).message ?? "unknown"}`);
     }
   }
 

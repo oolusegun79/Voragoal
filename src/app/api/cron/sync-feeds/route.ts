@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { syncAllLiveMatches } from "@/server/services/feedImportService";
+import {
+  autoTransitionMatches,
+  syncAllLiveMatches,
+} from "@/server/services/feedImportService";
 import { autoStartScheduledMatches } from "@/server/services/eventsService";
 
 export const dynamic = "force-dynamic";
@@ -15,11 +18,15 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Flip recently-due matches to LIVE first, so the immediate feed sync
-    // below picks up the same matches we just promoted.
+    // 1. Matches with a feed: drive every state transition (kickoff, HT,
+    //    resume 2H, FT) from API-Football's actual fixture state.
+    const autoTransition = await autoTransitionMatches();
+    // 2. Matches without a feed: fall back to kickoff-only auto-start so
+    //    the timer at least begins on time even without API binding.
     const autoStart = await autoStartScheduledMatches();
+    // 3. Pull new events for any match that's now LIVE.
     const feeds = await syncAllLiveMatches();
-    return NextResponse.json({ autoStart, feeds });
+    return NextResponse.json({ autoTransition, autoStart, feeds });
   } catch (err) {
     return NextResponse.json(
       { error: (err as Error).message ?? "sync failed" },
