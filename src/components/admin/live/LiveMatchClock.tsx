@@ -15,29 +15,36 @@ type ClockState = {
 // admin forgets to mark Half time and the wall-clock has run for hours.
 const ADDED_MINUTE_CAP = 30;
 
-function compute(state: ClockState): { half: 1 | 2 | "HT" | "—"; minute: number; addedMinute: number | null } {
+function compute(state: ClockState): {
+  half: 1 | 2 | "HT" | "—";
+  minute: number;
+  second: number;
+  addedMinute: number | null;
+} {
   if (state.status !== "LIVE" || !state.kickoffStartedAt) {
-    return { half: "—", minute: 0, addedMinute: null };
+    return { half: "—", minute: 0, second: 0, addedMinute: null };
   }
   const now = Date.now();
 
   if (state.secondHalfStartedAt) {
-    const elapsed = now - new Date(state.secondHalfStartedAt).getTime();
-    const minutes = 45 + Math.floor(elapsed / 60000);
+    const totalSeconds = Math.max(0, Math.floor((now - new Date(state.secondHalfStartedAt).getTime()) / 1000));
+    const minutes = 45 + Math.floor(totalSeconds / 60);
+    const second = totalSeconds % 60;
     return minutes > 90
-      ? { half: 2, minute: 90, addedMinute: Math.min(minutes - 90, ADDED_MINUTE_CAP) }
-      : { half: 2, minute: minutes, addedMinute: null };
+      ? { half: 2, minute: 90, second, addedMinute: Math.min(minutes - 90, ADDED_MINUTE_CAP) }
+      : { half: 2, minute: minutes, second, addedMinute: null };
   }
 
   if (state.addedMinutes1H == null) {
-    const elapsed = now - new Date(state.kickoffStartedAt).getTime();
-    const minutes = Math.floor(elapsed / 60000);
+    const totalSeconds = Math.max(0, Math.floor((now - new Date(state.kickoffStartedAt).getTime()) / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const second = totalSeconds % 60;
     return minutes > 45
-      ? { half: 1, minute: 45, addedMinute: Math.min(minutes - 45, ADDED_MINUTE_CAP) }
-      : { half: 1, minute: minutes, addedMinute: null };
+      ? { half: 1, minute: 45, second, addedMinute: Math.min(minutes - 45, ADDED_MINUTE_CAP) }
+      : { half: 1, minute: minutes, second, addedMinute: null };
   }
 
-  return { half: "HT", minute: 45, addedMinute: state.addedMinutes1H };
+  return { half: "HT", minute: 45, second: 0, addedMinute: state.addedMinutes1H };
 }
 
 export function LiveMatchClock({ state }: { state: ClockState }) {
@@ -61,10 +68,12 @@ export function LiveMatchClock({ state }: { state: ClockState }) {
           isLive ? "bg-error/20 text-error" : isHT ? "bg-warning/20 text-warning" : "bg-card-muted text-muted-foreground"
         )}
       >
-        {isHT ? "HALF TIME" : c.half === 1 ? "1H" : c.half === 2 ? "2H" : "—"}
+        {isHT ? "HALF TIME" : c.half === 1 ? "1st Half" : c.half === 2 ? "2nd Half" : "—"}
       </span>
       <span className="text-2xl font-semibold tabular-nums">
-        {c.minute}'{c.addedMinute ? `+${c.addedMinute}` : ""}
+        {c.minute}
+        {c.addedMinute ? `+${c.addedMinute}` : ""}
+        :{String(c.second).padStart(2, "0")}
       </span>
       <span className="text-[10px] text-muted-foreground" aria-hidden>
         {/* tick reference; keeps the rerender ticking visually */}
