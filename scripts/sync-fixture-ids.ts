@@ -38,6 +38,12 @@ const TEAM_ALIASES: Record<string, string> = {
   "south korea": "korea republic",
   "iran islamic republic": "iran",
   "ivory coast": "cote d'ivoire",
+  // API uses ampersand
+  "bosnia and herzegovina": "bosnia & herzegovina",
+  // API appends "Islands"
+  "cape verde": "cape verde islands",
+  // API drops "Republic"
+  "czech republic": "czechia",
 };
 
 function norm(s: string): string {
