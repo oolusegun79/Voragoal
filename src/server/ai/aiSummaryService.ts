@@ -55,6 +55,54 @@ function isPastFinishDelay(m: ClockFields): boolean {
   return Date.now() - ft.getTime() >= MATCH_SUMMARY_DELAY_MS;
 }
 
+/**
+ * For PLAYER and TEAM insights, the underlying facts change every time the
+ * subject plays a new match — so we want the same "wait 10 min after FT"
+ * behaviour the match summary has. This returns the clock fields of the
+ * subject's most recent FINISHED match (or null if there are none).
+ */
+async function latestFinishedMatchForSubject(
+  subjectType: SubjectType,
+  subjectId: string,
+): Promise<ClockFields | null> {
+  if (subjectType === "PLAYER") {
+    const event = await prisma.matchEvent.findFirst({
+      where: {
+        OR: [{ playerId: subjectId }, { relatedPlayerId: subjectId }],
+        match: { status: "FINISHED" },
+      },
+      orderBy: { match: { kickoffAt: "desc" } },
+      select: {
+        match: {
+          select: {
+            kickoffStartedAt: true,
+            secondHalfStartedAt: true,
+            addedMinutes1H: true,
+            addedMinutes2H: true,
+          },
+        },
+      },
+    });
+    return event?.match ?? null;
+  }
+  if (subjectType === "TEAM") {
+    return prisma.match.findFirst({
+      where: {
+        status: "FINISHED",
+        OR: [{ homeTeamId: subjectId }, { awayTeamId: subjectId }],
+      },
+      orderBy: { kickoffAt: "desc" },
+      select: {
+        kickoffStartedAt: true,
+        secondHalfStartedAt: true,
+        addedMinutes1H: true,
+        addedMinutes2H: true,
+      },
+    });
+  }
+  return null;
+}
+
 export type SummaryResult = {
   contentMd: string;
   cached: boolean;
@@ -118,25 +166,6 @@ async function findLatest(subjectType: SubjectType, subjectId: string) {
     where: { subjectType, subjectId },
     orderBy: { createdAt: "desc" },
   });
-}
-
-function appendSources(text: string, citations: string[]): string {
-  if (citations.length === 0) return text;
-  const seen = new Set<string>();
-  const items: string[] = [];
-  for (const url of citations) {
-    try {
-      const host = new URL(url).hostname.replace(/^www\./, "");
-      if (seen.has(host)) continue;
-      seen.add(host);
-      items.push(`[${host}](${url})`);
-    } catch {
-      // Skip malformed URLs from the search backend.
-    }
-    if (items.length >= 5) break;
-  }
-  if (items.length === 0) return text;
-  return `${text}\n\n**Sources:** ${items.join(" · ")}`;
 }
 
 /**
@@ -219,6 +248,33 @@ export async function getSummary(
     }
   }
 
+  // PLAYER and TEAM insights re-aggregate over all matches the subject has
+  // played, so the dataHash bumps every time a new match finishes. Without
+  // this guard we'd burn a Perplexity call within seconds of FT — before any
+  // recap is searchable on the web. Show the previous cached summary (any
+  // dataHash) until the latest match crosses the 10-min threshold.
+  if ((subjectType === "PLAYER" || subjectType === "TEAM") && !opts.force) {
+    const recent = await latestFinishedMatchForSubject(subjectType, subjectId);
+    if (recent && !isPastFinishDelay(recent)) {
+      const latest = await findLatest(subjectType, subjectId);
+      if (latest) {
+        return {
+          contentMd: latest.contentMd,
+          cached: true,
+          modelId: latest.modelId,
+          generated: "ok",
+        };
+      }
+      return {
+        contentMd:
+          "_Insights will refresh about 10 minutes after the latest match ends._",
+        cached: false,
+        modelId: "n/a",
+        generated: "skipped_live",
+      };
+    }
+  }
+
   // No cache hit. Try Perplexity.
   if (!isAiConfigured()) {
     const md = fallbackTemplate(subjectType, facts);
@@ -248,13 +304,12 @@ export async function getSummary(
   }
 
   try {
-    let { text, citations } = await call();
+    let { text } = await call();
     if (DENYLIST.test(text)) {
       const retry = await call(
         "Your previous draft contained forbidden language. Rewrite it now without ANY mention of betting, odds, wagering, gambling, spreads, parlays, or future result probabilities."
       );
       text = retry.text;
-      citations = retry.citations;
     }
     if (DENYLIST.test(text) || !text) {
       const md = fallbackTemplate(subjectType, facts);
@@ -266,9 +321,8 @@ export async function getSummary(
         generated: "fallback",
       };
     }
-    const withSources = appendSources(text, citations);
-    await persist(subjectType, subjectId, withSources, dataHash, modelId);
-    return { contentMd: withSources, cached: false, modelId, generated: "ok" };
+    await persist(subjectType, subjectId, text, dataHash, modelId);
+    return { contentMd: text, cached: false, modelId, generated: "ok" };
   } catch (err) {
     console.error("[ai] generation failed:", err);
     const md = fallbackTemplate(subjectType, facts);
