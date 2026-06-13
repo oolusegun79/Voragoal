@@ -58,7 +58,7 @@ export async function AiSummaryCard({
   const path =
     subjectType === "MATCH"  ? `/api/ai/match-summary/${subjectId}/regenerate`
     : subjectType === "PLAYER" ? `/api/ai/player-insights/${subjectId}/regenerate`
-    : subjectType === "TEAM"   ? null
+    : subjectType === "TEAM"   ? `/api/ai/team-insights/${subjectId}/regenerate`
     : null;
 
   return (

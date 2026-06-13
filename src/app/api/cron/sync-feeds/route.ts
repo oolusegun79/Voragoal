@@ -4,6 +4,7 @@ import {
   syncAllLiveMatches,
 } from "@/server/services/feedImportService";
 import { autoStartScheduledMatches } from "@/server/services/eventsService";
+import { autoGenerateRecentMatchSummaries } from "@/server/ai/aiSummaryService";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,11 @@ export async function GET(req: Request) {
     const autoStart = await autoStartScheduledMatches();
     // 3. Pull new events for any match that's now LIVE.
     const feeds = await syncAllLiveMatches();
-    return NextResponse.json({ autoTransition, autoStart, feeds });
+    // 4. Generate AI summaries for matches that finished ~10 min ago, giving
+    //    Perplexity's web search time to find post-match recaps. Capped per
+    //    tick so the backlog can't burn the per-min API budget.
+    const aiSummaries = await autoGenerateRecentMatchSummaries(2);
+    return NextResponse.json({ autoTransition, autoStart, feeds, aiSummaries });
   } catch (err) {
     return NextResponse.json(
       { error: (err as Error).message ?? "sync failed" },

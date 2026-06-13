@@ -14,6 +14,47 @@ import {
 const DENYLIST =
   /\b(bet|betting|odds|wager|wagering|gamble|gambling|parlay|moneyline|spread|over\/under|prediction market)\b/i;
 
+// We delay AI match summary generation until ~10 min after full-time so that
+// Perplexity's web search picks up post-match recaps (ESPN, BBC, etc.) instead
+// of returning a thin summary based only on our internal events feed.
+const MATCH_SUMMARY_DELAY_MS = 10 * 60 * 1000;
+
+type ClockFields = {
+  kickoffStartedAt: Date | null;
+  secondHalfStartedAt: Date | null;
+  addedMinutes1H: number | null;
+  addedMinutes2H: number | null;
+};
+
+/**
+ * Best-effort estimate of when full-time happened. Returns null if we don't
+ * have enough clock fields to make a reasonable estimate (the cron will then
+ * skip the match, and an admin can still force-generate via the button).
+ */
+function estimateFinishTime(m: ClockFields): Date | null {
+  const stoppage2H = (m.addedMinutes2H ?? 0) * 60 * 1000;
+  if (m.secondHalfStartedAt) {
+    return new Date(m.secondHalfStartedAt.getTime() + 45 * 60 * 1000 + stoppage2H);
+  }
+  if (m.kickoffStartedAt) {
+    const stoppage1H = (m.addedMinutes1H ?? 0) * 60 * 1000;
+    // 45 first half + stoppage + ~15 min HT break + 45 second half + stoppage
+    return new Date(
+      m.kickoffStartedAt.getTime() +
+        (45 + 15 + 45) * 60 * 1000 +
+        stoppage1H +
+        stoppage2H,
+    );
+  }
+  return null;
+}
+
+function isPastFinishDelay(m: ClockFields): boolean {
+  const ft = estimateFinishTime(m);
+  if (!ft) return false;
+  return Date.now() - ft.getTime() >= MATCH_SUMMARY_DELAY_MS;
+}
+
 export type SummaryResult = {
   contentMd: string;
   cached: boolean;
@@ -151,6 +192,33 @@ export async function getSummary(
     }
   }
 
+  // Hold off on the first AI generation for a freshly-finished match until
+  // ~10 min after FT, so Perplexity's web search picks up post-match recaps.
+  // Force=true (cron sweep, admin Regenerate) skips this guard.
+  if (subjectType === "MATCH" && !opts.force) {
+    const m = facts as Awaited<ReturnType<typeof buildMatchFacts>>;
+    if (m && m.status === "FINISHED") {
+      const clock = await prisma.match.findUnique({
+        where: { id: subjectId },
+        select: {
+          kickoffStartedAt: true,
+          secondHalfStartedAt: true,
+          addedMinutes1H: true,
+          addedMinutes2H: true,
+        },
+      });
+      if (clock && !isPastFinishDelay(clock)) {
+        return {
+          contentMd:
+            "_The AI match summary will be generated about 10 minutes after full-time._",
+          cached: false,
+          modelId: "n/a",
+          generated: "skipped_live",
+        };
+      }
+    }
+  }
+
   // No cache hit. Try Perplexity.
   if (!isAiConfigured()) {
     const md = fallbackTemplate(subjectType, facts);
@@ -220,4 +288,52 @@ export function scheduleMatchSummary(matchId: string) {
   void getSummary("MATCH", matchId, { force: true }).catch((err) => {
     console.error("[ai] schedule failed:", err);
   });
+}
+
+export type AutoGenSummary = {
+  candidates: number;
+  generated: Array<{ matchId: string; ok: boolean; error?: string }>;
+};
+
+/**
+ * Cron sweep: find FINISHED matches that ended ≥10 min ago and have no
+ * AiSummary row yet, then force-generate one. Cap per tick keeps the per-min
+ * call budget bounded — at the cap, the backlog drains over a few minutes.
+ */
+export async function autoGenerateRecentMatchSummaries(limit = 2): Promise<AutoGenSummary> {
+  const out: AutoGenSummary = { candidates: 0, generated: [] };
+  if (!isAiConfigured()) return out;
+
+  const finished = await prisma.match.findMany({
+    where: { status: "FINISHED" },
+    select: {
+      id: true,
+      kickoffStartedAt: true,
+      secondHalfStartedAt: true,
+      addedMinutes1H: true,
+      addedMinutes2H: true,
+    },
+  });
+
+  const past = finished.filter(isPastFinishDelay);
+  if (past.length === 0) return out;
+
+  const existing = await prisma.aiSummary.findMany({
+    where: { subjectType: "MATCH", subjectId: { in: past.map((m) => m.id) } },
+    select: { subjectId: true },
+  });
+  const hasSummary = new Set(existing.map((e) => e.subjectId));
+
+  const candidates = past.filter((m) => !hasSummary.has(m.id)).slice(0, limit);
+  out.candidates = candidates.length;
+
+  for (const m of candidates) {
+    try {
+      await getSummary("MATCH", m.id, { force: true });
+      out.generated.push({ matchId: m.id, ok: true });
+    } catch (err) {
+      out.generated.push({ matchId: m.id, ok: false, error: (err as Error).message });
+    }
+  }
+  return out;
 }
