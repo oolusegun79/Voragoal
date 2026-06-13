@@ -212,12 +212,70 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
   const apiHomeId = fixture.teams.home.id;
   const apiAwayId = fixture.teams.away.id;
   const events = fixture.events ?? [];
+  const homeTeamId = match.homeTeamId;
+  const awayTeamId = match.awayTeamId;
+  const matchIdLocal = match.id;
+
+  // Pre-pass: collect VAR cancellations so we can both delete previously-
+  // imported goals that got disallowed and skip re-importing them this poll.
+  const cancellations: Array<{ minute: number; teamId: string }> = [];
+  for (const ev of events) {
+    if (ev.type.toLowerCase() !== "var") continue;
+    const detail = (ev.detail ?? "").toLowerCase();
+    if (!detail.includes("cancel") && !detail.includes("disallow")) continue;
+    let cancTeam: string | null = null;
+    if (ev.team.id === apiHomeId) cancTeam = homeTeamId;
+    else if (ev.team.id === apiAwayId) cancTeam = awayTeamId;
+    if (cancTeam) cancellations.push({ minute: ev.time.elapsed, teamId: cancTeam });
+  }
+  const GOAL_TYPES: EventType[] = ["GOAL", "PENALTY_GOAL", "OWN_GOAL"];
+  let scoreDirty = false;
+  for (const c of cancellations) {
+    // For GOAL / PENALTY_GOAL the VAR.team and stored teamId match.
+    // For OWN_GOAL we swap on import (team = conceder), so the cancelled own
+    // goal would sit on the opposite team in our DB — handle both sides.
+    const opposingTeamId = c.teamId === homeTeamId ? awayTeamId : homeTeamId;
+    const deleted = await prisma.matchEvent.deleteMany({
+      where: {
+        matchId: matchIdLocal,
+        importedFromFeed: true,
+        type: { in: GOAL_TYPES },
+        minute: { gte: c.minute - 1, lte: c.minute + 1 },
+        teamId: { in: [c.teamId, opposingTeamId] },
+      },
+    });
+    if (deleted.count > 0) scoreDirty = true;
+  }
+  if (scoreDirty) {
+    const { recomputeMatchScore } = await import("@/server/services/eventsService");
+    await recomputeMatchScore(matchIdLocal);
+  }
+
+  function isCancelledGoal(ev: ApiEvent, mappedType: EventType): boolean {
+    if (!GOAL_TYPES.includes(mappedType)) return false;
+    const apiTeam =
+      ev.team.id === apiHomeId
+        ? homeTeamId
+        : ev.team.id === apiAwayId
+          ? awayTeamId
+          : null;
+    if (!apiTeam) return false;
+    return cancellations.some(
+      (c) => Math.abs(c.minute - ev.time.elapsed) <= 1 && c.teamId === apiTeam,
+    );
+  }
 
   for (const ev of events) {
     summary.attempted += 1;
 
     const mappedType = mapType(ev.type, ev.detail);
     if (!mappedType) {
+      summary.skipped += 1;
+      continue;
+    }
+
+    // Skip goals that VAR cancelled in this same response.
+    if (isCancelledGoal(ev, mappedType)) {
       summary.skipped += 1;
       continue;
     }
