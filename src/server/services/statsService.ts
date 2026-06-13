@@ -4,15 +4,15 @@ const GOAL_TYPES = ["GOAL", "PENALTY_GOAL"] as const;
 
 export async function getTournamentKpis() {
   const now = new Date();
-  const sevenDaysOut = new Date(now);
-  sevenDaysOut.setUTCDate(sevenDaysOut.getUTCDate() + 7);
+  const fiveDaysOut = new Date(now);
+  fiveDaysOut.setUTCDate(fiveDaysOut.getUTCDate() + 5);
 
-  const [totalMatches, finishedMatches, totalGoals, upcomingThisWeek] = await Promise.all([
+  const [totalMatches, finishedMatches, totalGoals, upcomingSoon] = await Promise.all([
     prisma.match.count(),
     prisma.match.count({ where: { status: "FINISHED" } }),
     prisma.matchEvent.count({ where: { type: { in: [...GOAL_TYPES, "OWN_GOAL"] } } }),
     prisma.match.count({
-      where: { status: "SCHEDULED", kickoffAt: { gte: now, lt: sevenDaysOut } },
+      where: { status: "SCHEDULED", kickoffAt: { gte: now, lt: fiveDaysOut } },
     }),
   ]);
 
@@ -22,7 +22,7 @@ export async function getTournamentKpis() {
     totalMatches,
     finishedMatches,
     totalGoals,
-    upcomingThisWeek,
+    upcomingSoon,
     topScorer,
   };
 }

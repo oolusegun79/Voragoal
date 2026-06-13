@@ -94,8 +94,8 @@ export default async function DashboardPage() {
           accent="accent"
         />
         <KpiCard
-          label="Upcoming · 7d"
-          value={kpis.upcomingThisWeek}
+          label="Upcoming · 5d"
+          value={kpis.upcomingSoon}
           icon={Sparkles}
           accent="warning"
         />
