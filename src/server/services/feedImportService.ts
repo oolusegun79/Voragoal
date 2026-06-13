@@ -48,6 +48,7 @@ export type SyncSummary = {
   attempted: number;
   inserted: number;
   skipped: number;
+  statsUpdated: number;
   errors: string[];
 };
 
@@ -154,6 +155,124 @@ async function resolvePlayer(
   return picked.id;
 }
 
+type ApiStat = { type: string; value: number | string | null };
+type ApiTeamStats = {
+  team: { id: number; name: string };
+  statistics: ApiStat[];
+};
+type ApiStatisticsResponse = { errors?: unknown; response?: ApiTeamStats[] };
+
+async function fetchFixtureStatistics(externalApiId: string): Promise<ApiTeamStats[]> {
+  const data = await apiFootball<ApiStatisticsResponse>(
+    `/fixtures/statistics?fixture=${encodeURIComponent(externalApiId)}`,
+  );
+  return data.response ?? [];
+}
+
+type MappedStats = {
+  possession: number | null;
+  shots: number | null;
+  shotsOnTarget: number | null;
+  corners: number | null;
+  fouls: number | null;
+  offsides: number | null;
+  xG: number | null;
+  passes: number | null;
+  passAccuracy: number | null;
+};
+
+function emptyStats(): MappedStats {
+  return {
+    possession: null,
+    shots: null,
+    shotsOnTarget: null,
+    corners: null,
+    fouls: null,
+    offsides: null,
+    xG: null,
+    passes: null,
+    passAccuracy: null,
+  };
+}
+
+function parsePercent(v: number | string | null): number | null {
+  if (v == null) return null;
+  if (typeof v === "number") return v > 1 ? v / 100 : v;
+  const n = parseFloat(v.replace("%", "").trim());
+  if (Number.isNaN(n)) return null;
+  return n > 1 ? n / 100 : n;
+}
+
+function parseInteger(v: number | string | null): number | null {
+  if (v == null) return null;
+  if (typeof v === "number") return Math.round(v);
+  const n = parseInt(v.trim(), 10);
+  return Number.isNaN(n) ? null : n;
+}
+
+function parseFloatOrNull(v: number | string | null): number | null {
+  if (v == null) return null;
+  if (typeof v === "number") return v;
+  const n = parseFloat(v.trim());
+  return Number.isNaN(n) ? null : n;
+}
+
+function mapStats(rows: ApiStat[]): MappedStats {
+  const out = emptyStats();
+  for (const r of rows) {
+    const t = r.type.toLowerCase();
+    if (t === "ball possession") out.possession = parsePercent(r.value);
+    else if (t === "total shots") out.shots = parseInteger(r.value);
+    else if (t === "shots on goal") out.shotsOnTarget = parseInteger(r.value);
+    else if (t === "corner kicks") out.corners = parseInteger(r.value);
+    else if (t === "fouls") out.fouls = parseInteger(r.value);
+    else if (t === "offsides") out.offsides = parseInteger(r.value);
+    else if (t === "expected_goals") out.xG = parseFloatOrNull(r.value);
+    else if (t === "total passes") out.passes = parseInteger(r.value);
+    else if (t === "passes %") out.passAccuracy = parsePercent(r.value);
+  }
+  return out;
+}
+
+function hasAnyValue(s: MappedStats): boolean {
+  return Object.values(s).some((v) => v != null);
+}
+
+async function syncStatsForMatch(
+  matchId: string,
+  externalApiId: string,
+  apiHomeId: number,
+  apiAwayId: number,
+  homeTeamId: string,
+  awayTeamId: string,
+): Promise<{ updated: number; error?: string }> {
+  let rows: ApiTeamStats[];
+  try {
+    rows = await fetchFixtureStatistics(externalApiId);
+  } catch (err) {
+    return { updated: 0, error: `stats fetch failed: ${(err as Error).message}` };
+  }
+
+  let updated = 0;
+  for (const row of rows) {
+    let internalTeamId: string | null = null;
+    if (row.team.id === apiHomeId) internalTeamId = homeTeamId;
+    else if (row.team.id === apiAwayId) internalTeamId = awayTeamId;
+    if (!internalTeamId) continue;
+
+    const mapped = mapStats(row.statistics);
+    if (!hasAnyValue(mapped)) continue;
+
+    await prisma.matchStat.upsert({
+      where: { matchId_teamId: { matchId, teamId: internalTeamId } },
+      create: { matchId, teamId: internalTeamId, ...mapped },
+      update: mapped,
+    });
+    updated += 1;
+  }
+  return { updated };
+}
+
 function eventKey(
   externalMatchId: string,
   apiEvent: ApiEvent,
@@ -172,7 +291,14 @@ function eventKey(
 }
 
 export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
-  const summary: SyncSummary = { matchId, attempted: 0, inserted: 0, skipped: 0, errors: [] };
+  const summary: SyncSummary = {
+    matchId,
+    attempted: 0,
+    inserted: 0,
+    skipped: 0,
+    statsUpdated: 0,
+    errors: [],
+  };
 
   if (!isApiFeedConfigured()) {
     summary.errors.push("API_FOOTBALL_KEY not configured");
@@ -372,6 +498,17 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
     }
   }
 
+  const stats = await syncStatsForMatch(
+    matchIdLocal,
+    match.externalApiId,
+    apiHomeId,
+    apiAwayId,
+    homeTeamId,
+    awayTeamId,
+  );
+  summary.statsUpdated = stats.updated;
+  if (stats.error) summary.errors.push(stats.error);
+
   return summary;
 }
 
@@ -511,6 +648,7 @@ export async function syncAllLiveMatches(): Promise<SyncAllSummary> {
           attempted: 0,
           inserted: 0,
           skipped: 0,
+          statsUpdated: 0,
           errors: [(r.reason as Error)?.message ?? "unknown"],
         },
   );
