@@ -1,6 +1,6 @@
 import type { SubjectType } from "@prisma/client";
 import { prisma } from "@/server/db";
-import { getAnthropic, MODELS, isAiConfigured } from "@/server/ai/anthropic";
+import { MODELS, isAiConfigured, perplexityChat } from "@/server/ai/perplexity";
 import { STYLE_GUIDE } from "@/server/ai/styleGuide";
 import {
   buildMatchFacts,
@@ -79,6 +79,25 @@ async function findLatest(subjectType: SubjectType, subjectId: string) {
   });
 }
 
+function appendSources(text: string, citations: string[]): string {
+  if (citations.length === 0) return text;
+  const seen = new Set<string>();
+  const items: string[] = [];
+  for (const url of citations) {
+    try {
+      const host = new URL(url).hostname.replace(/^www\./, "");
+      if (seen.has(host)) continue;
+      seen.add(host);
+      items.push(`[${host}](${url})`);
+    } catch {
+      // Skip malformed URLs from the search backend.
+    }
+    if (items.length >= 5) break;
+  }
+  if (items.length === 0) return text;
+  return `${text}\n\n**Sources:** ${items.join(" · ")}`;
+}
+
 /**
  * Get-or-generate a summary. Returns existing row when the facts haven't
  * changed since the last call. Set `force` to bypass the cache (EDITOR+).
@@ -132,9 +151,8 @@ export async function getSummary(
     }
   }
 
-  // No cache hit. Try Anthropic.
-  const client = getAnthropic();
-  if (!client) {
+  // No cache hit. Try Perplexity.
+  if (!isAiConfigured()) {
     const md = fallbackTemplate(subjectType, facts);
     await persist(subjectType, subjectId, md, dataHash, "fallback/template");
     return {
@@ -147,38 +165,28 @@ export async function getSummary(
 
   const modelId = MODELS.narrative;
 
-  async function call(extraSystemRule = ""): Promise<string> {
-    const res = await client!.messages.create({
+  async function call(extraSystemRule = "") {
+    const system = extraSystemRule
+      ? `${STYLE_GUIDE}\n\nADDITIONAL RULE:\n${extraSystemRule}`
+      : STYLE_GUIDE;
+    return perplexityChat({
       model: modelId,
-      max_tokens: 600,
-      system: [
-        { type: "text", text: STYLE_GUIDE, cache_control: { type: "ephemeral" } },
-        ...(extraSystemRule
-          ? [{ type: "text" as const, text: extraSystemRule }]
-          : []),
-      ],
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: `Subject type: ${subjectType}. Write the analytics paragraph.` },
-            { type: "text", text: "Facts (JSON):\n" + canonicalJson(facts) },
-          ],
-        },
-      ],
+      system,
+      user:
+        `Subject type: ${subjectType}. Write the analytics summary in the required format.\n\n` +
+        `Facts (JSON):\n${canonicalJson(facts)}`,
+      maxTokens: 700,
     });
-    const block = res.content[0];
-    if (!block || block.type !== "text") return "";
-    return block.text.trim();
   }
 
   try {
-    let text = await call();
+    let { text, citations } = await call();
     if (DENYLIST.test(text)) {
-      // One stricter retry.
-      text = await call(
+      const retry = await call(
         "Your previous draft contained forbidden language. Rewrite it now without ANY mention of betting, odds, wagering, gambling, spreads, parlays, or future result probabilities."
       );
+      text = retry.text;
+      citations = retry.citations;
     }
     if (DENYLIST.test(text) || !text) {
       const md = fallbackTemplate(subjectType, facts);
@@ -190,8 +198,9 @@ export async function getSummary(
         generated: "fallback",
       };
     }
-    await persist(subjectType, subjectId, text, dataHash, modelId);
-    return { contentMd: text, cached: false, modelId, generated: "ok" };
+    const withSources = appendSources(text, citations);
+    await persist(subjectType, subjectId, withSources, dataHash, modelId);
+    return { contentMd: withSources, cached: false, modelId, generated: "ok" };
   } catch (err) {
     console.error("[ai] generation failed:", err);
     const md = fallbackTemplate(subjectType, facts);

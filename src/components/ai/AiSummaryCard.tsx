@@ -4,7 +4,7 @@ import type { SubjectType } from "@prisma/client";
 import { auth } from "@/server/auth/config";
 import { userHasPass } from "@/server/auth/access";
 import { getSummary } from "@/server/ai/aiSummaryService";
-import { isAiConfigured } from "@/server/ai/anthropic";
+import { isAiConfigured } from "@/server/ai/perplexity";
 import { RegenerateButton } from "@/components/ai/RegenerateButton";
 import { PaywallCard } from "@/components/paywall/PaywallCard";
 
@@ -45,7 +45,7 @@ export async function AiSummaryCard({
       <Card title={title} description={description}>
         <p className="rounded-lg border border-dashed border-border/60 bg-card/40 p-6 text-center text-sm text-muted-foreground">
           AI insights aren't configured for this environment.{" "}
-          <code className="rounded bg-card-muted px-1.5 py-0.5 text-xs">ANTHROPIC_API_KEY</code>{" "}
+          <code className="rounded bg-card-muted px-1.5 py-0.5 text-xs">PERPLEXITY_API_KEY</code>{" "}
           is missing.
         </p>
       </Card>
@@ -74,10 +74,39 @@ export async function AiSummaryCard({
       <article className="prose prose-invert prose-sm max-w-none text-sm leading-relaxed text-foreground/90">
         <ReactMarkdown
           components={{
-            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-            a: () => <span className="text-muted-foreground">[link removed]</span>,
-            // Strip any script/html that slipped through; react-markdown ignores
-            // raw HTML by default in v10 unless rehype-raw is configured.
+            p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+            h2: ({ children }) => (
+              <h4 className="mt-5 mb-2 text-sm font-semibold tracking-tight text-foreground">
+                {children}
+              </h4>
+            ),
+            h3: ({ children }) => (
+              <h4 className="mt-4 mb-2 text-sm font-semibold tracking-tight text-foreground">
+                {children}
+              </h4>
+            ),
+            strong: ({ children }) => (
+              <strong className="font-medium text-foreground">{children}</strong>
+            ),
+            a: ({ href, children }) => {
+              // Only render http(s) links — react-markdown already filters
+              // dangerous protocols by default, but be explicit.
+              const safe =
+                typeof href === "string" && /^https?:\/\//i.test(href);
+              if (!safe) {
+                return <span className="text-muted-foreground">{children}</span>;
+              }
+              return (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded bg-card-muted px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  {children}
+                </a>
+              );
+            },
           }}
         >
           {result.contentMd}
