@@ -231,6 +231,15 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
       continue;
     }
 
+    // API-Football reports OWN_GOAL with team = beneficiary (the team that
+    // gets the goal credited). Our model stores teamId = team that conceded
+    // (the team of the player who scored it). Swap here so the player lookup
+    // runs against the right squad and recomputeMatchScore credits correctly.
+    if (mappedType === "OWN_GOAL") {
+      internalTeamId =
+        internalTeamId === match.homeTeamId ? match.awayTeamId : match.homeTeamId;
+    }
+
     const key = eventKey(match.externalApiId, ev, mappedType, internalTeamId);
 
     // Fast path: previously-imported event with the current key format.
