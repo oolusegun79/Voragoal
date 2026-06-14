@@ -84,14 +84,26 @@ export default function PrivacyPage() {
             </ul>
 
             <p className="mt-3 text-muted-foreground">
-              You can block marketing cookies via your browser's third-party cookie controls, a
-              tracking-protection extension, Google Ad Settings (
+              When you first visit Voragoal, a consent banner asks whether you accept the marketing
+              cookies above. You can accept or reject each category independently, and change your mind
+              anytime via the <span className="text-foreground">Cookie Settings</span> link in the
+              footer. We honor Global Privacy Control (GPC) signals — if your browser sends one, we
+              treat it as a Do-Not-Sell-or-Share opt-out for US state privacy laws. You can also block
+              marketing cookies at the browser level, or via Google Ad Settings (
               <a className="underline" href="https://adssettings.google.com" target="_blank" rel="noreferrer">
                 adssettings.google.com
               </a>
-              ), or the ad personalisation controls inside the TikTok app. We display a notice at the bottom
-              of the site informing you that cookies are in use; this is not a granular consent banner. EU/UK
-              visitors should use the browser- or vendor-level controls above to opt out.
+              ) and the ad personalisation controls inside the TikTok app. For the complete
+              machine-readable inventory of every cookie set on this site, see our{" "}
+              <a
+                className="underline"
+                href="https://www.iubenda.com/privacy-policy/10595823/cookie-policy"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Cookie Policy
+              </a>
+              .
             </p>
           </section>
 
@@ -148,6 +160,11 @@ export default function PrivacyPage() {
               <li>
                 <span className="text-foreground">Zoho Mail</span> — outbound email (e.g. password reset,
                 receipts).
+              </li>
+              <li>
+                <span className="text-foreground">Iubenda</span> — Consent Management Platform. Stores
+                the consent records (which cookie categories you accepted, when, and from what IP) that
+                GDPR requires us to retain for audit. Subject to Iubenda&apos;s privacy policy.
               </li>
             </ul>
           </section>
