@@ -37,6 +37,9 @@ export function GoalsByTeamChart({ data }: { data: GoalsByTeam[] }) {
               fontSize: 12,
             }}
             labelStyle={{ color: "#f8fafc" }}
+            itemStyle={{ color: "#ffffff" }}
+            separator=""
+            formatter={(value) => [`${value} goals`, ""]}
           />
           <Bar dataKey="goals" radius={[4, 4, 0, 0]}>
             {data.map((d) => (
