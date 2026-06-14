@@ -6,14 +6,28 @@ import { withSentryConfig } from "@sentry/nextjs";
 // 'unsafe-inline' is unavoidable without a nonce middleware. We tighten
 // everything else — default-src, base-uri, object-src, frame-ancestors,
 // upgrade-insecure-requests — to limit the blast radius of any XSS.
+//
+// Allowed third-party origins (kept narrow on purpose — each one is a
+// known vendor we've vetted in the privacy policy):
+//   - *.iubenda.com           Consent Management Platform (banner, autoblocking, hosted policies)
+//   - *.googletagmanager.com  Google Ads gtag.js loader
+//   - *.google.com, *.googleadservices.com, *.g.doubleclick.net
+//                              Google Ads conversion tracking + measurement pings
+//   - analytics.tiktok.com    TikTok Pixel + tracking calls
+//   - *.sentry.io, *.ingest.us.sentry.io
+//                              Sentry error/perf reporting
+//   - *.vercel-*.com, *.vercel.live
+//                              Vercel platform (preview banner, insights)
+//   - js.stripe.com, *.stripe.com
+//                              Stripe Checkout (frames + form action)
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com",
-  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.iubenda.com https://*.googletagmanager.com https://*.google.com https://*.googleadservices.com https://analytics.tiktok.com",
+  "style-src 'self' 'unsafe-inline' https://*.iubenda.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.vercel-insights.com https://*.vercel.live wss://*.vercel.live",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
+  "connect-src 'self' https://*.vercel-insights.com https://*.vercel.live wss://*.vercel.live https://*.iubenda.com https://*.ingest.us.sentry.io https://*.sentry.io https://*.google.com https://*.googleadservices.com https://*.googletagmanager.com https://*.g.doubleclick.net https://analytics.tiktok.com https://*.tiktok.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://*.iubenda.com https://td.doubleclick.net",
   "form-action 'self' https://checkout.stripe.com https://accounts.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
