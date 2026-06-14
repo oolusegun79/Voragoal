@@ -7,10 +7,11 @@ const PIXEL_ID = "D8M4EV3C77U0TM0K476G";
  * Events Manager surfaces as the "PageView" event. Loaded after-interactive
  * so it never blocks first paint.
  *
- * NOTE: this is a third-party tracker that sets cookies for ad attribution.
- * The current dismissible CookieNotice is not GDPR-grade consent. If we
- * start serving EU/UK visitors we should gate this behind a real consent
- * flow (granular accept/reject, script-not-loaded-until-accepted).
+ * `ttq.holdConsent()` is called immediately so the pixel sets no cookies
+ * until consent is granted. Iubenda's CMP fires `ttq.grantConsent()` on
+ * user accept (or `ttq.revokeConsent()` on withdraw). This belt-and-braces
+ * matches Iubenda's autoblocking — if either layer fires correctly the
+ * pixel respects consent.
  */
 export function TikTokPixel() {
   return (
@@ -21,6 +22,7 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
 
   ttq.load('${PIXEL_ID}');
+  ttq.holdConsent();
   ttq.page();
 }(window, document, 'ttq');`}
     </Script>

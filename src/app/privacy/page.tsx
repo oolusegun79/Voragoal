@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "How Voragoal collects, uses, and protects your personal information.",
 };
 
-const LAST_UPDATED = "8 June 2026";
+const LAST_UPDATED = "13 June 2026";
 
 export default function PrivacyPage() {
   return (
@@ -57,19 +57,41 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-lg font-semibold">2. Cookies</h2>
-            <p className="text-muted-foreground">
-              Voragoal uses only strictly necessary cookies — the kind that are required for the site to
-              function and that do not require consent under EU/UK e-Privacy rules:
-            </p>
-            <ul className="mt-2 ml-5 list-disc space-y-1 text-muted-foreground">
+            <h2 className="mb-2 text-lg font-semibold">2. Cookies and similar technologies</h2>
+            <p className="text-muted-foreground">Voragoal uses two categories of cookies:</p>
+
+            <p className="mt-3 text-foreground">Essential cookies</p>
+            <p className="text-muted-foreground">Required for the site to function:</p>
+            <ul className="mt-1 ml-5 list-disc space-y-1 text-muted-foreground">
               <li>A session cookie that keeps you signed in.</li>
               <li>A CSRF token cookie that protects sign-in and account actions.</li>
             </ul>
-            <p className="mt-2 text-muted-foreground">
-              We do not use analytics, advertising, or third-party tracking cookies. If that changes in the
-              future, we will update this policy and request your consent before any non-essential cookie is
-              set.
+
+            <p className="mt-4 text-foreground">Marketing and measurement cookies</p>
+            <p className="text-muted-foreground">
+              Set by third parties when their scripts load on our pages. We use them to see whether our ad
+              campaigns are bringing visitors to the site and producing Tournament Pass purchases:
+            </p>
+            <ul className="mt-1 ml-5 list-disc space-y-1 text-muted-foreground">
+              <li>
+                <span className="text-foreground">TikTok Pixel</span> — sets cookies on TikTok-owned domains
+                to attribute purchases to TikTok ad campaigns.
+              </li>
+              <li>
+                <span className="text-foreground">Google Ads tag (gtag.js)</span> — sets cookies on
+                Google-owned domains to attribute purchases to Google Ads campaigns.
+              </li>
+            </ul>
+
+            <p className="mt-3 text-muted-foreground">
+              You can block marketing cookies via your browser's third-party cookie controls, a
+              tracking-protection extension, Google Ad Settings (
+              <a className="underline" href="https://adssettings.google.com" target="_blank" rel="noreferrer">
+                adssettings.google.com
+              </a>
+              ), or the ad personalisation controls inside the TikTok app. We display a notice at the bottom
+              of the site informing you that cookies are in use; this is not a granular consent banner. EU/UK
+              visitors should use the browser- or vendor-level controls above to opt out.
             </p>
           </section>
 
@@ -83,7 +105,10 @@ export default function PrivacyPage() {
               <li>To protect Voragoal and our users from fraud and abuse.</li>
             </ul>
             <p className="mt-2 text-muted-foreground">
-              We do not sell your data. We do not share it with advertisers.
+              We do not sell your personal data. We share limited measurement events with TikTok and Google
+              Ads — specifically, that a purchase happened and the Stripe session ID (used as an opaque
+              deduplication key). We never share your email, name, password, or account contents with
+              advertisers.
             </p>
           </section>
 
@@ -95,13 +120,23 @@ export default function PrivacyPage() {
                 privacy policy.
               </li>
               <li>
-                <span className="text-foreground">Google</span> — optional sign-in. Subject to Google&apos;s
-                privacy policy. We only request your email, name, and profile picture.
+                <span className="text-foreground">Google</span> — used in two ways. (1) Optional sign-in
+                (Google Sign-In) — we request only your email, name, and profile picture. (2) Google Ads
+                conversion measurement (gtag.js) — sets cookies on Google-owned domains and receives
+                anonymous purchase events (the fact of a purchase plus the Stripe session ID for
+                deduplication) to attribute Tournament Pass sales to Google Ads campaigns. Subject to
+                Google&apos;s privacy policy.
               </li>
               <li>
-                <span className="text-foreground">Anthropic (Claude)</span> — generates AI match, team, and
-                player summaries. We send only public tournament facts (scores, lineups, events) — never your
-                email, name, or any personal information.
+                <span className="text-foreground">TikTok</span> — TikTok Pixel for ad measurement. Sets
+                cookies on TikTok-owned domains and receives anonymous purchase events (the fact of a
+                purchase plus the Stripe session ID for deduplication) to attribute Tournament Pass sales to
+                TikTok ad campaigns. Subject to TikTok&apos;s privacy policy.
+              </li>
+              <li>
+                <span className="text-foreground">Perplexity</span> — generates AI match, team, and player
+                summaries via the Perplexity Sonar API. We send only public tournament facts (scores,
+                lineups, events) — never your email, name, or any personal information.
               </li>
               <li>
                 <span className="text-foreground">Vercel</span> — hosting and serverless infrastructure.

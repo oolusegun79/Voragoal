@@ -7,25 +7,33 @@ const GOOGLE_ADS_ID = "AW-18229902307";
  * blocks first paint. Once initialised, individual conversion events are
  * fired by PurchaseConversionTracker on the checkout success page.
  *
- * NOTE: this is a third-party tracker that sets cookies for ad attribution.
- * The current dismissible CookieNotice is not GDPR-grade consent. If we
- * start serving EU/UK visitors we should gate this (and the TikTok pixel)
- * behind a real consent flow with Google Consent Mode v2 defaults set to
- * denied until the user accepts.
+ * Consent Mode v2 defaults are set to `denied` synchronously before gtag.js
+ * loads, so even in the brief window before Iubenda's consent state arrives
+ * no ad/analytics cookies are set. Iubenda's CMP then fires
+ * `gtag('consent', 'update', granted)` on user accept.
  */
 export function GoogleAdsTag() {
   return (
     <>
+      <Script id="google-ads-consent-defaults" strategy="beforeInteractive">
+        {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  wait_for_update: 500
+});`}
+      </Script>
       <Script
         id="google-ads-loader"
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`}
       />
       <Script id="google-ads-init" strategy="afterInteractive">
-        {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-window.gtag = gtag;
-gtag('js', new Date());
+        {`gtag('js', new Date());
 gtag('config', '${GOOGLE_ADS_ID}');`}
       </Script>
     </>

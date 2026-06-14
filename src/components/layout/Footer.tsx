@@ -47,6 +47,12 @@ export function Footer() {
           <Link href="/faq" className="hover:text-foreground">FAQ</Link>
           <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
           <Link href="/terms" className="hover:text-foreground">Terms</Link>
+          <a href="#" className="iubenda-cs-preferences-link hover:text-foreground">
+            Cookie Settings
+          </a>
+          <a href="#" className="iubenda-cs-uspr-link hover:text-foreground">
+            Your Privacy Choices
+          </a>
         </nav>
       </div>
     </footer>

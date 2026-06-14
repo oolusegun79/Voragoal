@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "flag-icons/css/flag-icons.min.css";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
-import { CookieNotice } from "@/components/legal/CookieNotice";
+import { IubendaConsent } from "@/components/legal/IubendaConsent";
 import { TikTokPixel } from "@/components/analytics/TikTokPixel";
 import { GoogleAdsTag } from "@/components/analytics/GoogleAdsTag";
 
@@ -59,8 +58,7 @@ export default function RootLayout({
         <div id="main" className="flex flex-1 flex-col">
           {children}
         </div>
-        <CookieNotice />
-        <Analytics />
+        <IubendaConsent />
         <TikTokPixel />
         <GoogleAdsTag />
       </body>
