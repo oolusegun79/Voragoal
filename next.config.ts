@@ -22,12 +22,12 @@ import { withSentryConfig } from "@sentry/nextjs";
 //                              Stripe Checkout (frames + form action)
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.iubenda.com https://*.googletagmanager.com https://*.google.com https://*.googleadservices.com https://analytics.tiktok.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-scripts.com https://*.iubenda.com https://*.googletagmanager.com https://*.google.com https://*.googleadservices.com https://*.googlesyndication.com https://*.doubleclick.net https://analytics.tiktok.com",
   "style-src 'self' 'unsafe-inline' https://*.iubenda.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.vercel-insights.com https://*.vercel.live wss://*.vercel.live https://*.iubenda.com https://*.ingest.us.sentry.io https://*.sentry.io https://*.google.com https://*.googleadservices.com https://*.googletagmanager.com https://*.g.doubleclick.net https://analytics.tiktok.com https://*.tiktok.com",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://*.iubenda.com https://td.doubleclick.net",
+  "connect-src 'self' https://*.vercel-insights.com https://*.vercel.live wss://*.vercel.live https://*.iubenda.com https://*.ingest.us.sentry.io https://*.sentry.io https://*.google.com https://*.googleadservices.com https://*.googletagmanager.com https://*.googlesyndication.com https://*.doubleclick.net https://analytics.tiktok.com https://*.tiktok.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://*.iubenda.com https://td.doubleclick.net https://*.doubleclick.net",
   "form-action 'self' https://checkout.stripe.com https://accounts.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
