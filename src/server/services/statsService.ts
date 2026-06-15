@@ -81,18 +81,35 @@ export async function getGoalsByTeam(limit = 10): Promise<GoalsByTeam[]> {
     .filter((x): x is GoalsByTeam => x !== null);
 }
 
-export type TopScorerRow = {
+// Unified row shape for top-scorers / top-assists / future leaderboards.
+// `count` is whatever the metric is (goals for getTopScorers, assists for
+// getTopAssists). Consumers pass the metric label to the chart for display.
+export type LeaderboardRow = {
   playerId: string;
   name: string;
   shortName: string;
   flagEmoji: string;
-  goals: number;
+  count: number;
 };
 
-export async function getTopScorers(limit = 10): Promise<TopScorerRow[]> {
+// Back-compat alias: existing callers (dashboard) reference TopScorerRow.
+export type TopScorerRow = LeaderboardRow;
+
+export async function getTopScorers(limit = 10): Promise<LeaderboardRow[]> {
+  return getLeaderboard([...GOAL_TYPES], limit);
+}
+
+export async function getTopAssists(limit = 10): Promise<LeaderboardRow[]> {
+  return getLeaderboard(["ASSIST"], limit);
+}
+
+async function getLeaderboard(
+  types: Array<"GOAL" | "PENALTY_GOAL" | "ASSIST">,
+  limit: number,
+): Promise<LeaderboardRow[]> {
   const grouped = await prisma.matchEvent.groupBy({
     by: ["playerId"],
-    where: { type: { in: [...GOAL_TYPES] }, playerId: { not: null } },
+    where: { type: { in: types }, playerId: { not: null } },
     _count: { _all: true },
     orderBy: { _count: { playerId: "desc" } },
     take: limit,
@@ -112,10 +129,10 @@ export async function getTopScorers(limit = 10): Promise<TopScorerRow[]> {
         name: p.knownAs ?? p.fullName,
         shortName: p.team.shortName,
         flagEmoji: p.team.flagEmoji,
-        goals: g._count._all,
-      } satisfies TopScorerRow;
+        count: g._count._all,
+      } satisfies LeaderboardRow;
     })
-    .filter((x): x is TopScorerRow => x !== null);
+    .filter((x): x is LeaderboardRow => x !== null);
 }
 
 export type ResultsSplit = { wins: number; draws: number; losses: number };

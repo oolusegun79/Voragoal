@@ -7,8 +7,7 @@ import {
   setMatchStatus,
   startMatch,
 } from "@/server/services/eventsService";
-
-const API_BASE = "https://v3.football.api-sports.io";
+import { apiFootball, isApiFeedConfigured, shouldThrottle } from "@/server/api-football/client";
 
 type ApiPlayer = { id: number | null; name: string | null };
 
@@ -57,22 +56,9 @@ export type SyncAllSummary = {
   matches: SyncSummary[];
 };
 
-export function isApiFeedConfigured(): boolean {
-  return Boolean(process.env.API_FOOTBALL_KEY);
-}
-
-async function apiFootball<T>(path: string): Promise<T> {
-  const key = process.env.API_FOOTBALL_KEY;
-  if (!key) throw new Error("API_FOOTBALL_KEY not configured");
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "x-apisports-key": key },
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`API-Football ${res.status}: ${await res.text().catch(() => "")}`);
-  }
-  return res.json() as Promise<T>;
-}
+// Re-export so existing callers (cron route, admin actions) keep working
+// without import-path churn. New code should import from the shared client.
+export { isApiFeedConfigured };
 
 async function fetchFixture(externalApiId: string): Promise<ApiFixture | null> {
   const data = await apiFootball<ApiFixturesResponse>(
@@ -520,16 +506,64 @@ export async function syncMatchFromFeed(matchId: string): Promise<SyncSummary> {
         importedFromFeed: true,
       });
       summary.inserted += 1;
+
+      // API-Football attaches the assist provider to the goal event itself
+      // (ev.assist.player). Emit a sibling ASSIST MatchEvent so the assist
+      // counts toward the top-assists leaderboard. Own goals don't have
+      // credited assists. Self-assists are dropped (would be a data error).
+      if (
+        (mappedType === "GOAL" || mappedType === "PENALTY_GOAL") &&
+        ev.assist.id != null
+      ) {
+        try {
+          const assistPlayerId = await resolvePlayer(
+            internalTeamId,
+            ev.assist.id,
+            ev.assist.name,
+          );
+          if (assistPlayerId && assistPlayerId !== playerId) {
+            const assistKey = `${key}-assist`;
+            const existing = await prisma.matchEvent.findUnique({
+              where: {
+                matchId_externalEventKey: {
+                  matchId: match.id,
+                  externalEventKey: assistKey,
+                },
+              },
+              select: { id: true },
+            });
+            if (!existing) {
+              await createEvent({
+                matchId: match.id,
+                minute: ev.time.elapsed,
+                addedMinute: ev.time.extra ?? null,
+                type: "ASSIST",
+                teamId: internalTeamId,
+                playerId: assistPlayerId,
+                relatedPlayerId: playerId,
+                detail: null,
+                externalEventKey: assistKey,
+                importedFromFeed: true,
+              });
+              summary.inserted += 1;
+            }
+          }
+        } catch (err) {
+          summary.errors.push(
+            `assist insert failed @ ${ev.time.elapsed}': ${(err as Error).message}`,
+          );
+        }
+      }
     } catch (err) {
       summary.errors.push(`insert failed (${mappedType} @ ${ev.time.elapsed}'): ${(err as Error).message}`);
     }
   }
 
-  // Cost guard: stats don't move minute-to-minute the way events do.
-  // Only fetch every 5 minutes (and on the first poll where statsUpdated=0
-  // gets a value of 0 anyway). Saves ~80% of /fixtures/statistics calls.
-  const minuteOfHour = new Date().getUTCMinutes();
-  if (minuteOfHour % 5 === 0) {
+  // Cost guard: stats don't move minute-to-minute the way events do. Only
+  // fetch every 5 min per match. shouldThrottle stamps the call as soon as
+  // it returns false, so concurrent ticks can't double-fire.
+  const throttled = await shouldThrottle(`stats:${matchIdLocal}`, 300);
+  if (!throttled) {
     const stats = await syncStatsForMatch(
       matchIdLocal,
       match.externalApiId,

@@ -309,3 +309,11 @@ model AiSummary {
   @@unique([subjectType, subjectId, dataHash])
   @@index([subjectType, subjectId])
 }
+
+// Last-call timestamps for API-Football endpoints, used by shouldThrottle().
+// Replaces the per-endpoint inline minute-modulo throttles with a single
+// generic mechanism that each new endpoint poller calls into.
+model FeedCallLog {
+  key          String   @id // e.g. "injuries", "lineups:<matchId>", "topscorers"
+  lastCalledAt DateTime
+}

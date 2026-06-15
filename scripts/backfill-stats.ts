@@ -18,8 +18,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 loadEnv({ path: ".env.local", override: true });
 
+import { apiFootball } from "@/server/api-football/client";
+
 const APPLY = process.argv.includes("--apply");
-const API_BASE = "https://v3.football.api-sports.io";
 
 type ApiFixture = {
   fixture: { id: number };
@@ -34,16 +35,6 @@ type ApiTeamStats = {
   team: { id: number; name: string };
   statistics: ApiStat[];
 };
-
-async function apiFootball<T>(path: string): Promise<T> {
-  const key = process.env.API_FOOTBALL_KEY!;
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "x-apisports-key": key },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`API-Football ${res.status}`);
-  return res.json() as Promise<T>;
-}
 
 function parsePercent(v: number | string | null): number | null {
   if (v == null) return null;
