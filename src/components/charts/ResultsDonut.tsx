@@ -2,8 +2,10 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { ResultsSplit } from "@/server/services/statsService";
+import { useIsMounted } from "@/lib/use-is-mounted";
 
 export function ResultsDonut({ data }: { data: ResultsSplit }) {
+  const mounted = useIsMounted();
   const total = data.wins + data.draws;
   if (total === 0) {
     return (
@@ -16,6 +18,7 @@ export function ResultsDonut({ data }: { data: ResultsSplit }) {
     { name: "Decisive", value: data.wins, fill: "#22c55e" },
     { name: "Draw", value: data.draws, fill: "#fbbf24" },
   ];
+  if (!mounted) return <div className="h-72 w-full" aria-hidden />;
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">

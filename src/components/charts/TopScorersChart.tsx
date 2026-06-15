@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { LeaderboardRow } from "@/server/services/statsService";
+import { useIsMounted } from "@/lib/use-is-mounted";
 
 type Metric = "goals" | "assists";
 
@@ -29,6 +30,7 @@ export function TopScorersChart({
   // min-height + h-full resolves to 0 because percentages can't compute
   // against an auto-height parent. Use a fixed height class either way.
   const heightClass = tall ? "h-[28rem]" : "h-72";
+  const mounted = useIsMounted();
   if (data.length === 0) {
     return (
       <div
@@ -40,6 +42,7 @@ export function TopScorersChart({
   }
   // Recharts vertical bar chart reads top-to-bottom; reverse so #1 is at the top.
   const padded = [...data].reverse();
+  if (!mounted) return <div className={`${heightClass} w-full`} aria-hidden />;
   return (
     <div className={`${heightClass} w-full`}>
       <ResponsiveContainer width="100%" height="100%">

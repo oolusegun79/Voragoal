@@ -2,13 +2,16 @@
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import type { GoalsByTeam } from "@/server/services/statsService";
+import { useIsMounted } from "@/lib/use-is-mounted";
 
 export function GoalsByTeamChart({ data }: { data: GoalsByTeam[] }) {
+  const mounted = useIsMounted();
   if (data.length === 0) {
     return (
       <EmptyChart message="No goals scored yet. Comes alive once matches finish." />
     );
   }
+  if (!mounted) return <div className="h-72 w-full" aria-hidden />;
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
