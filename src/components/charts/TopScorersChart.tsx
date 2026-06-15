@@ -25,7 +25,10 @@ export function TopScorersChart({
   /** Stretch the chart vertically — useful for the dedicated leaderboard page. */
   tall?: boolean;
 }) {
-  const heightClass = tall ? "min-h-[40rem] h-full" : "h-72";
+  // Recharts' ResponsiveContainer needs a parent with an explicit height —
+  // min-height + h-full resolves to 0 because percentages can't compute
+  // against an auto-height parent. Use a fixed height class either way.
+  const heightClass = tall ? "h-[28rem]" : "h-72";
   if (data.length === 0) {
     return (
       <div
